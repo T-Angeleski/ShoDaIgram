@@ -18,7 +18,6 @@ class Scraper:
         """
         logger.info("Starting the scraping process...")
 
-        # TODO: Implement actual scraping logic here
         # (https://quotes.toscrape.com/)
 
         logger.info("Completed")
