@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sho-da-igram"
+version = "0.1.0"
+description = "Data Engineering Pipeline for Game Recommendations"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    {name = "Teodor Angeleski", email = "teodorangeleski@gmail.com"}
+]
+
+dependencies = [
+    "requests>=2.31.0",
+    "httpx>=0.25.0",
+    "beautifulsoup4>=4.12.0",
+    "scrapy>=2.11.0",
+    "pydantic>=2.4.0",
+    "pandera>=0.17.0",
+    "python-dotenv>=1.0.0",
+    "rich>=13.0.0",
+    "typer>=0.9.0",
+    "loguru>=0.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.7.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "pre-commit>=3.4.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sho_da_igram"]
+
+# Tool configurations
+[tool.black]
+line-length = 88
+target-version = ['py312']
+
+[tool.isort]
+profile = "black"
+line_length = 88

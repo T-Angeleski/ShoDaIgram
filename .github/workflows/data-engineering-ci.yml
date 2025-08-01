@@ -1,0 +1,46 @@
+name: Data Engineering CI
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "data-engineering/**"
+      - ".github/workflows/data-engineering-ci.yml"
+  pull_request:
+    branches: [master]
+    paths:
+      - "data-engineering/**"
+
+defaults:
+  run:
+    working-directory: data-engineering
+
+jobs:
+  lint-and-format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Check formatting
+        run: |
+          uv run black --check src/ main.py
+          uv run isort --check-only src/ main.py
+
+      - name: Run linting
+        run: uv run flake8 src/ main.py
+
+      - name: Test scraper
+        run: uv run python main.py
