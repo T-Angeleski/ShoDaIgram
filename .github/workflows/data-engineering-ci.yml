@@ -2,12 +2,12 @@ name: Data Engineering CI
 
 on:
   push:
-    branches: [master]
+    branches: [master, main]
     paths:
       - "data-engineering/**"
       - ".github/workflows/data-engineering-ci.yml"
   pull_request:
-    branches: [master]
+    branches: [master, main]
     paths:
       - "data-engineering/**"
 
