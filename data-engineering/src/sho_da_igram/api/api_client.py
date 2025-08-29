@@ -1,34 +1,12 @@
 """RAWG API Client for fetching video game data"""
 
 import time
-from typing import Any, Dict, List, Optional, Union
-from urllib.parse import urlencode
+from typing import Any, Dict, Optional
 
 import httpx
 from loguru import logger
-from pydantic import BaseModel, Field
 
 BASE_API_URL = "https://api.rawg.io/api"
-
-
-class GameResponse(BaseModel):
-    """Response model for game data from API."""
-
-    id: int
-    name: str
-    slug: str
-    releaseDate: Optional[str] = None
-    rating: float = 0.0
-    rating_top: int = 0
-    ratings_count: int = 0
-    metacritic: Optional[int] = None
-    genres: List[Dict[str, Any]] = Field(default_factory=lambda: [])
-    platforms: List[Dict[str, Any]] = Field(default_factory=lambda: [])
-    developers: List[Dict[str, Any]] = Field(default_factory=lambda: [])
-    publishers: List[Dict[str, Any]] = Field(default_factory=lambda: [])
-    tags: List[Dict[str, Any]] = Field(default_factory=lambda: [])
-    background_image: Optional[str] = None
-    description: Optional[str] = None
 
 
 class RAWGClient:
@@ -80,110 +58,30 @@ class RAWGClient:
             params["key"] = self.api_key
 
         url = f"{self.base_url}/{endpoint}"
-        if params:
-            url += f"?{urlencode(params)}"
-
-        logger.debug(f"Making request to: {url}")
 
         try:
-            response = self.client.get(url)
+            response = self.client.get(url, params=params)
             response.raise_for_status()
             return response.json()
-        except httpx.HTTPStatusError as e:
-            logger.error(f"HTTP error: {e.response.status_code} - {e.response.text}")
-            raise
         except Exception as e:
-            logger.error(f"Request failed: {str(e)}")
+            logger.error(f"Request failed for {endpoint}: {e}")
             raise
 
-    def get_games(
-        self,
-        page: int = 1,
-        page_size: int = 20,
-        search: Optional[str] = None,
-        genres: Optional[str] = None,
-        platforms: Optional[str] = None,
-        ordering: str = "-rating",
+    def get_games_page(
+        self, page: int = 1, page_size: int = 40, **filters: Any
     ) -> Dict[str, Any]:
-        """
-        Get games from RAWG API.
-
-        Args:
-            page: Page number (1-based)
-            page_size: Number of games per page (max 40)
-            search: Search query
-            genres: Comma-separated genre IDs
-            platforms: Comma-separated platform IDs
-            ordering: Sort order (e.g., '-rating', 'name', '-released')
-
-        Returns:
-            API response with games data
-        """
-        params: Dict[str, Union[str, int]] = {
+        """Get one page of games with optional filters."""
+        params: Dict[str, Any] = {
             "page": page,
-            "page_size": min(page_size, 40),  # API limit
-            "ordering": ordering,
+            "page_size": min(page_size, 40),
+            **filters,
         }
-
-        if search:
-            params["search"] = search
-        if genres:
-            params["genres"] = genres
-        if platforms:
-            params["platforms"] = platforms
-
-        logger.info(f"Fetching games: page={page}, size={page_size}")
         return self._make_request("games", params)
 
     def get_game_details(self, game_id: int) -> Dict[str, Any]:
-        """
-        Get detailed information for a specific game.
-
-        Args:
-            game_id: RAWG game ID
-
-        Returns:
-            Detailed game data
-        """
-        logger.info(f"Fetching details for game ID: {game_id}")
+        """Get detailed game info."""
         return self._make_request(f"games/{game_id}")
 
-    def get_genres(self) -> Dict[str, Any]:
-        """Get all available genres."""
-        logger.info("Fetching genres")
-        return self._make_request("genres")
-
-    def get_platforms(self) -> Dict[str, Any]:
-        """Get all available platforms."""
-        logger.info("Fetching platforms")
-        return self._make_request("platforms")
-
-    def search_games(self, query: str, limit: int = 10) -> List[GameResponse]:
-        """
-        Search for games and return structured results.
-
-        Args:
-            query (str): Search term.
-            limit (int): Maximum number of results to return.
-
-        Returns:
-            List of game responses
-        """
-        response = self.get_games(search=query, page_size=limit)
-        games: List[GameResponse] = []
-
-        for game_data in response.get("results", []):
-            try:
-                game = GameResponse(**game_data)
-                games.append(game)
-            except Exception as e:
-                logger.error(f"Error parsing game data: {e} - Data: {game_data}")
-                continue
-
-        logger.info(f"Found {len(games)} games for query '{query}'")
-        return games
-
-    def close(self) -> None:
-        """Close the HTTP client."""
+    def close(self):
+        """Close the client."""
         self.client.close()
-        logger.info("Closed RAWG client")

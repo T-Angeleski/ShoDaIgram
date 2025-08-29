@@ -1,4 +1,4 @@
-"""Main entry point for the data engineering pipeline."""
+"""Main entry point"""
 
 import sys
 from pathlib import Path
@@ -18,17 +18,19 @@ def main():
     config.setup_logging()
 
     Path(config.data_dir).mkdir(parents=True, exist_ok=True)
+
     fetcher = GameDataFetcher(config)
 
     try:
         logger.info("Starting data fetch process")
-        output_file = fetcher.fetch_and_save_popular_games(limit=50)
 
-        print(f"✅ Pipeline completed! Data saved to: {output_file}")
+        output_file = fetcher.fetch_games_to_csv(limit=config.fetch_limit)
+
+        print(f"Pipeline completed! Data saved to: {output_file}")
 
     except Exception as e:
         logger.error(f"Pipeline failed: {e}")
-        print(f"❌ Pipeline failed: {e}")
+        print(f"Pipeline failed: {e}")
         sys.exit(1)
 
     finally:
