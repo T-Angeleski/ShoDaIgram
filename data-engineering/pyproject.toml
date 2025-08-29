@@ -13,15 +13,9 @@ authors = [
 ]
 
 dependencies = [
-    "requests>=2.31.0",
     "httpx>=0.25.0",
-    "beautifulsoup4>=4.12.0",
-    "scrapy>=2.11.0",
     "pydantic>=2.4.0",
-    "pandera>=0.17.0",
     "python-dotenv>=1.0.0",
-    "rich>=13.0.0",
-    "typer>=0.9.0",
     "loguru>=0.7.0",
 ]
 
@@ -36,7 +30,6 @@ dev = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/sho_da_igram"]
 
-# Tool configurations
 [tool.black]
 line-length = 88
 target-version = ['py312']
@@ -44,3 +37,8 @@ target-version = ['py312']
 [tool.isort]
 profile = "black"
 line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true

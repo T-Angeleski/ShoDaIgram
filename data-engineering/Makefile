@@ -1,4 +1,4 @@
-.PHONY: help install dev-install lint format clean scrape pre-commit-install pre-commit-run
+.PHONY: help install dev-install lint format clean fetch-data pre-commit-install pre-commit-run
 
 GREEN := \033[0;32m
 YELLOW := \033[0;33m
@@ -19,8 +19,8 @@ lint:  ## Run linting
 	uv run flake8 src/ main.py
 
 format:  ## Format code
-	uv run black src/ main.py
 	uv run isort src/ main.py
+	uv run black src/ main.py
 
 format-check:  ## Check formatting
 	uv run black --check src/ main.py
@@ -32,8 +32,8 @@ pre-commit-install:  ## Install pre-commit hooks
 pre-commit-run:  ## Run pre-commit on all files
 	uv run pre-commit run --all-files
 
-scrape:  ## Run scraping pipeline
-	@echo "$(GREEN)Running scraping pipeline...$(NC)"
+fetch-data:  ## Fetch game data from RAWG API
+	@echo "$(GREEN)Fetching game data from RAWG API...$(NC)"
 	uv run python main.py
 
 clean:  ## Clean cache and temporary files
