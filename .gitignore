@@ -108,13 +108,13 @@ dmypy.json
 Thumbs.db
 
 # Project specific - Data files
-data/
 *.csv
 *.json
 *.parquet
 *.db
 *.sqlite
 *.sqlite3
+data-engineering/data
 
 # Logs
 logs/
