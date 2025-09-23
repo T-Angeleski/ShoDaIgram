@@ -14,7 +14,11 @@ class Config(BaseModel):
     """Simple config for data fetching."""
 
     rawg_api_key: Optional[str] = None
-    api_rate_limit: float = 1.0
+    rawg_rate_limit: float = 1.0
+
+    igdb_client_id: Optional[str] = None
+    igdb_access_token: Optional[str] = None
+    igdb_rate_limit: float = 0.25  # 4 requests per second
 
     data_dir: str = "data"
     fetch_limit: int = 100
@@ -28,7 +32,10 @@ class Config(BaseModel):
         """Load from environment."""
         return cls(
             rawg_api_key=os.getenv("RAWG_API_KEY"),
-            api_rate_limit=float(os.getenv("API_RATE_LIMIT", "1.0")),
+            rawg_rate_limit=float(os.getenv("RAWG_RATE_LIMIT", "1.0")),
+            igdb_client_id=os.getenv("IGDB_CLIENT_ID"),
+            igdb_access_token=os.getenv("IGDB_ACCESS_TOKEN"),
+            igdb_rate_limit=float(os.getenv("IGDB_RATE_LIMIT", "0.25")),
             data_dir=os.getenv("DATA_DIR", "data"),
             fetch_limit=int(os.getenv("FETCH_LIMIT", "100")),
             log_level=os.getenv("LOG_LEVEL", "INFO"),
