@@ -134,3 +134,9 @@ test-rawg: validate-env  ## Test RAWG connection
 test-igdb: validate-env  ## Test IGDB connection
 	@echo "$(GREEN)🧪 Testing IGDB connection...$(NC)"
 	FETCH_LIMIT=5 uv run python main.py igdb
+
+# ============================================================================
+# CI/CD
+# ============================================================================
+ci: format lint
+	@echo "$(GREEN)✅ CI checks passed!$(NC)"
