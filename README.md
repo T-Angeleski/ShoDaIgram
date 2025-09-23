@@ -1,25 +1,72 @@
 # Sho Da Igram 🎮
 
-A video game recommendation system.
+A video game recommendation system that collects game data from multiple APIs and provides intelligent recommendations.
 
 ## Project Structure
 
-- **`data-engineering/`** - Data collection and processing pipeline
-- **`backend/`** - API server (planned)
-- **`frontend/`** - Web interface (planned)
-
-## Getting Started
-
-```bash
-cd data-engineering
-make setup
-make scrape
+```
+ShoDaIgram/
+├── data-engineering/     # Data collection pipeline (✅ Active)
+│   ├── src/             # Python source code
+│   ├── data/            # JSON output files
+│   └── Makefile         # Development commands
+├── etl/                 # ETL processing (🚧 Coming Soon)
+├── backend/             # API server (📋 Planned)
+└── frontend/            # Web interface (📋 Planned)
 ```
 
-## Current Status
+## Current Features
 
-✅ **Data Engineering** - In Progress
-🚧 **Backend API** - Planned
-🚧 **Frontend** - Planned
+### Data Engineering Pipeline
+
+- **Multi-API Integration**: Fetches from RAWG and IGDB APIs
+- **Rich Game Data**: Genres, platforms, ratings, developers, publishers
+- **JSON Output**: Structured data ready for processing
+- **Rate Limiting**: Respects API limits automatically
+- **Comprehensive Logging**: Full pipeline visibility
+
+## Quick Start
+
+```bash
+# Setup data pipeline
+cd data-engineering
+make setup
+
+# Configure API keys in .env
+make get-token
+
+# Collect game data
+make fetch-all
+
+# View collected data
+make show-data
+```
+
+## Development Status
+
+| Component               | Status         | Description                    |
+| ----------------------- | -------------- | ------------------------------ |
+| 📥 **Data Engineering** | ✅ **Active**  | Multi-API game data collection |
+| 🔄 **ETL Pipeline**     | 🚧 **Next**    | Data transformation & loading  |
+| 🌐 **Backend API**      | 📋 **Planned** | FastAPI recommendation service |
+| 🎨 **Frontend**         | 📋 **Planned** | React web interface            |
+
+## Data Sources
+
+- **[RAWG](https://rawg.io/)** - Game database with ratings, screenshots, reviews
+- **[IGDB](https://www.igdb.com/)** - Comprehensive game metadata and relationships
+
+## Example Output
+
+```json
+{
+  "name": "The Witcher 3: Wild Hunt",
+  "rating": 96,
+  "genres": ["Action", "RPG"],
+  "platforms": ["PC", "PlayStation", "Xbox"],
+  "developers": ["CD PROJEKT RED"],
+  "data_source": "igdb"
+}
+```
 
 ---
