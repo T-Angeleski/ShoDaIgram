@@ -20,8 +20,6 @@ def get_access_token():
         "grant_type": "client_credentials",
     }
 
-    print(data)
-
     client = httpx.Client()
     response = client.post(URL, data=data)
 
