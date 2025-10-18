@@ -2,6 +2,24 @@
 
 A video game recommendation system that collects game data from multiple APIs and provides intelligent recommendations.
 
+<!-- Build & Quality -->
+
+[![CI](https://github.com/T-Angeleski/ShoDaIgram/actions/workflows/ci.yml/badge.svg)](https://github.com/T-Angeleski/ShoDaIgram/actions/workflows/ci.yml)
+[![Detekt](https://img.shields.io/badge/code%20style-detekt-blue)](https://detekt.dev)
+[![Ktlint](https://img.shields.io/badge/code%20style-ktlint-blue)](https://pinterest.github.io/ktlint)
+
+<!-- Tech Stack -->
+
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.0.10-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.6-6DB33F?logo=springboot&logoColor=white)](https://spring.io)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Lucene](https://img.shields.io/badge/Apache%20Lucene-9.10.0-D22128?logo=apache&logoColor=white)](https://lucene.apache.org)
+
+<!-- Project Info -->
+
+[![License](https://img.shields.io/github/license/T-Angeleski/ShoDaIgram)](LICENSE)
+[![Last Commit](https://img.shields.io/github/last-commit/T-Angeleski/ShoDaIgram)](https://github.com/T-Angeleski/ShoDaIgram/commits/main)
+
 ## Project Structure
 
 ```
@@ -10,8 +28,7 @@ ShoDaIgram/
 │   ├── src/             # Python source code
 │   ├── data/            # JSON output files
 │   └── Makefile         # Development commands
-├── etl/                 # ETL processing (🚧 Coming Soon)
-├── backend/             # API server (📋 Planned)
+├── backend/             # API
 └── frontend/            # Web interface (📋 Planned)
 ```
 
