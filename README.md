@@ -4,7 +4,6 @@ A video game recommendation system that collects game data from multiple APIs an
 
 <!-- Build & Quality -->
 
-[![CI](https://github.com/T-Angeleski/ShoDaIgram/actions/workflows/ci.yml/badge.svg)](https://github.com/T-Angeleski/ShoDaIgram/actions/workflows/ci.yml)
 [![Detekt](https://img.shields.io/badge/code%20style-detekt-blue)](https://detekt.dev)
 [![Ktlint](https://img.shields.io/badge/code%20style-ktlint-blue)](https://pinterest.github.io/ktlint)
 
