@@ -116,6 +116,43 @@ Thumbs.db
 *.sqlite3
 data-engineering/data
 
+# Backend
+backend/.github/
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# macOS
+.DS_Store
+
+# Secrets
+.env
+application-local.yml
+application-prod.yml
+
+# H2 Database
+*.db
+*.mv.db
+
+# Logs
+*.log
+logs/
+
+# ETL Data
+src/main/resources/data/raw/
+*.json
+!**/sample*.json
+
+
 # Logs
 logs/
 *.log
