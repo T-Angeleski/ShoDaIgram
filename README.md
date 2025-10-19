@@ -1,88 +1,111 @@
 # Sho Da Igram 🎮
 
-A video game recommendation system that collects game data from multiple APIs and provides intelligent recommendations.
+> "What game should I play?" - A work-in-progress game recommendation system
 
-<!-- Build & Quality -->
+Ever spend more time browsing game libraries than actually playing? This project aims to fix that by building a smart recommendation engine that actually understands what you like.
 
-[![Detekt](https://img.shields.io/badge/code%20style-detekt-blue)](https://detekt.dev)
-[![Ktlint](https://img.shields.io/badge/code%20style-ktlint-blue)](https://pinterest.github.io/ktlint)
 
-<!-- Tech Stack -->
+## What's Working Right Now
 
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.0.10-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.6-6DB33F?logo=springboot&logoColor=white)](https://spring.io)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org)
-[![Lucene](https://img.shields.io/badge/Apache%20Lucene-9.10.0-D22128?logo=apache&logoColor=white)](https://lucene.apache.org)
+### ✅ Data Collection Pipeline (Python)
+Scraping comprehensive game information from RAWG and IGDB APIs:
+- Game metadata (titles, descriptions, release dates)
+- Genre and platform information
+- User ratings and review counts
+- Developer/publisher details
+- Similar game relationships
 
-<!-- Project Info -->
+Already collected: **~10,000+ game records** as structured JSON files.
 
-[![License](https://img.shields.io/github/license/T-Angeleski/ShoDaIgram)](LICENSE)
-[![Last Commit](https://img.shields.io/github/last-commit/T-Angeleski/ShoDaIgram)](https://github.com/T-Angeleski/ShoDaIgram/commits/main)
+### 🔨 Backend API (Kotlin + Spring Boot)
+Setting up the foundation:
+- PostgreSQL database schema design
+- REST API endpoints (in progress)
+- Data models and repository layer
+
+## Tech Stack
+
+**Data Pipeline:**
+- Python 3.12 with httpx for API calls
+- JSON for structured data storage
+- Automated rate limiting and error handling
+
+**Backend:**
+- Kotlin 2.0.10
+- Spring Boot 3.5.6
+- PostgreSQL 16
+- Apache Lucene 9.10.0 (for search)
+
+**Code Quality:**
+- Ktlint & Detekt for Kotlin
+- Black & Flake8 for Python
+- Pre-commit hooks
 
 ## Project Structure
 
 ```
 ShoDaIgram/
-├── data-engineering/     # Data collection pipeline (✅ Active)
-│   ├── src/             # Python source code
-│   ├── data/            # JSON output files
-│   └── Makefile         # Development commands
-├── backend/             # API
-└── frontend/            # Web interface (📋 Planned)
+├── data-engineering/     # 🐍 Python - Data collection scripts
+│   ├── src/             # Fetchers for RAWG/IGDB APIs
+│   ├── data/            # ~10k games in JSON format
+│   └── Makefile         # make fetch-all, make dev, etc.
+│
+└── backend/             # 🔧 Kotlin - API server (in development)
+    ├── src/main/kotlin  # Spring Boot application
+    └── build.gradle.kts # Gradle build config
 ```
 
-## Current Features
+## Getting Started
 
-### Data Engineering Pipeline
-
-- **Multi-API Integration**: Fetches from RAWG and IGDB APIs
-- **Rich Game Data**: Genres, platforms, ratings, developers, publishers
-- **JSON Output**: Structured data ready for processing
-- **Rate Limiting**: Respects API limits automatically
-- **Comprehensive Logging**: Full pipeline visibility
-
-## Quick Start
+### 1. Collect Game Data
 
 ```bash
-# Setup data pipeline
 cd data-engineering
-make setup
-
-# Configure API keys in .env
-make get-token
-
-# Collect game data
-make fetch-all
-
-# View collected data
-make show-data
+make setup              # Install dependencies
+make get-token          # Generate IGDB API token
+make fetch-all          # Start collecting games (takes ~5-10 min)
+make show-data          # See what you got
 ```
 
-## Development Status
+### 2. Run the Backend (WIP)
 
-| Component               | Status         | Description                    |
-| ----------------------- | -------------- | ------------------------------ |
-| 📥 **Data Engineering** | ✅ **Active**  | Multi-API game data collection |
-| 🔄 **ETL Pipeline**     | 🚧 **Next**    | Data transformation & loading  |
-| 🌐 **Backend API**      | 📋 **Planned** | FastAPI recommendation service |
-| 🎨 **Frontend**         | 📋 **Planned** | React web interface            |
+```bash
+cd backend
+./gradlew bootRun
+```
 
-## Data Sources
+## What's Next?
 
-- **[RAWG](https://rawg.io/)** - Game database with ratings, screenshots, reviews
-- **[IGDB](https://www.igdb.com/)** - Comprehensive game metadata and relationships
+- [ ] **ETL Pipeline** - Transform raw JSON into normalized PostgreSQL tables
+- [ ] **Search API** - Lucene-powered game search endpoint
+- [ ] **Recommendation Engine** - Collaborative filtering based on genres/tags
+- [ ] **Frontend** - Simple web UI to test recommendations
 
-## Example Output
+## Why These APIs?
+
+**RAWG.io** - Great for popular games, user ratings, and screenshots. Free tier is generous.
+
+**IGDB** - More detailed metadata like game modes, franchises, and age ratings. Requires Twitch developer account (also free).
+
+
+## Sample Data
+
+Here's what the pipeline collects for each game:
 
 ```json
 {
   "name": "The Witcher 3: Wild Hunt",
-  "rating": 96,
+  "slug": "the-witcher-3-wild-hunt",
+  "rating": 92.5,
   "genres": ["Action", "RPG"],
-  "platforms": ["PC", "PlayStation", "Xbox"],
+  "platforms": ["PC", "PlayStation 4", "Xbox One", "Nintendo Switch"],
   "developers": ["CD PROJEKT RED"],
+  "publishers": ["CD PROJEKT RED"],
+  "themes": ["Fantasy", "Open World"],
+  "game_modes": ["Single player"],
+  "player_perspectives": ["Third person"],
+  "similar_games": ["The Elder Scrolls V: Skyrim", "Dragon Age: Inquisition"],
+  "first_release_date": "2015-05-19",
   "data_source": "igdb"
 }
 ```
-
----
