@@ -32,9 +32,18 @@ dependencies {
     implementation("org.apache.lucene:lucene-core:9.10.0")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.springdoc:springdoc-openapi-ui:1.6.0")
+    implementation("org.flywaydb:flyway-core") {
+        version {
+            strictly("10.20.1")
+        }
+    }
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-    runtimeOnly("com.h2database:h2")
     runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("org.flywaydb:flyway-database-postgresql") {
+        version {
+            strictly("10.20.1")
+        }
+    }
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
