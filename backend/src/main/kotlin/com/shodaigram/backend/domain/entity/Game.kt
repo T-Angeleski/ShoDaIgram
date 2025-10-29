@@ -1,12 +1,16 @@
 package com.shodaigram.backend.domain.entity
 
 import jakarta.persistence.*
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Entity
 @Table(name = "games")
+@EntityListeners(AuditingEntityListener::class)
 data class Game(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,15 +46,39 @@ data class Game(
     @Column(name = "website_url", columnDefinition = "TEXT")
     val websiteUrl: String? = null,
 
-    @Column(name = "search_vector", columnDefinition = "TSVECTOR")
+    @Column(name = "search_vector", columnDefinition = "TSVECTOR", insertable = false, updatable = false)
     val searchVector: String? = null,
 
+    @CreatedDate
     @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime? = null,
+    val createdAt: LocalDateTime = LocalDateTime.now(),
 
+    @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
-    val updatedAt: LocalDateTime? = null
+    val updatedAt: LocalDateTime = LocalDateTime.now(),
 
-//    val gameTags
-//    val similarities
-)
+    @OneToMany(mappedBy = "game", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val gameTags: MutableSet<GameTag> = mutableSetOf(),
+
+    @OneToMany(mappedBy = "game", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val similarities: MutableSet<GameSimilarity> = mutableSetOf(),
+) {
+    fun addTag(tag: Tag, weight: BigDecimal = BigDecimal.ONE) {
+        val gameTag = GameTag(game = this, tag = tag, weight = weight)
+        gameTags.add(gameTag)
+    }
+
+    fun removeTag(tag: Tag) {
+        gameTags.removeIf { it.tag == tag }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Game) return false
+        return slug == other.slug
+    }
+
+    override fun hashCode(): Int {
+        return slug.hashCode()
+    }
+}

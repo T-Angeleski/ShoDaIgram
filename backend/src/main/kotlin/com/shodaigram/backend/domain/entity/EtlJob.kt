@@ -2,12 +2,13 @@ package com.shodaigram.backend.domain.entity
 
 import jakarta.persistence.*
 import org.hibernate.annotations.ColumnDefault
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
 
 @Entity
 @Table(name = "etl_jobs")
+@EntityListeners(AuditingEntityListener::class)
 data class EtlJob(
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -18,7 +19,7 @@ data class EtlJob(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    var status: JobStatus = JobStatus.RUNNING,
+    var status: JobStatus = JobStatus.PENDING,
 
     @Column(name = "total_records", nullable = false)
     val totalRecords: Int = 0,
@@ -29,10 +30,10 @@ data class EtlJob(
     @Column(name = "failed_records", nullable = false)
     var failedRecords: Int = 0,
 
-    @Column(name = "error_message")
+    @Column(name = "error_message", columnDefinition = "TEXT")
     var errorMessage: String? = null,
 
-    @Column(name = "error_details")
+    @Column(name = "error_details", columnDefinition = "TEXT")
     val errorDetails: String? = null,
 
     @ColumnDefault("CURRENT_TIMESTAMP")
@@ -60,8 +61,8 @@ enum class DataSource {
 }
 
 enum class JobStatus {
-    RUNNING,
+    PENDING,
     COMPLETED,
     FAILED,
-    CANCELLED
+    PARTIAL
 }
