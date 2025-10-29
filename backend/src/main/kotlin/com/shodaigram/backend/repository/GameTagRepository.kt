@@ -5,5 +5,4 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface GameTagRepository : JpaRepository<GameTag, Long> {
-}
+interface GameTagRepository : JpaRepository<GameTag, Long>
