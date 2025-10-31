@@ -27,3 +27,4 @@ logging:
   level:
     org.flywaydb: INFO
     org.hibernate.SQL: DEBUG
+    org.hibernate.tool.schema: DEBUG
