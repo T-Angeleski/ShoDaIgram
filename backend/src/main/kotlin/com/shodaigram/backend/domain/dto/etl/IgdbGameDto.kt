@@ -1,7 +1,9 @@
 package com.shodaigram.backend.domain.dto.etl
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.shodaigram.backend.domain.entity.Game
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 
 /**
@@ -62,4 +64,16 @@ data class IgdbGameDto(
     val fetchedAt: OffsetDateTime,
     @JsonProperty("data_source")
     val dataSource: String = "igdb",
-)
+) {
+    fun toEntity() = Game(
+        name = this.name,
+        slug = this.slug,
+        description = this.summary ?: this.storyline,
+        releaseDate = this.firstReleaseDate,
+        rating = this.totalRating?.toBigDecimal(),
+        backgroundImageUrl = this.coverUrl,
+        igdbId = this.igdbId,
+        rawgId = null,
+        updatedAt = LocalDateTime.now(),
+    )
+}
