@@ -1,16 +1,15 @@
 package com.shodaigram.backend.service.etl
 
 import com.shodaigram.backend.domain.entity.EtlJob
-import com.shodaigram.backend.domain.entity.EtlJobLog
+import com.shodaigram.backend.domain.entity.Game
 import com.shodaigram.backend.domain.entity.GameSimilarity
 import com.shodaigram.backend.domain.entity.SimilarityType
 import com.shodaigram.backend.repository.EtlJobLogRepository
 import com.shodaigram.backend.repository.GameRepository
 import com.shodaigram.backend.repository.GameSimilarityRepository
-import org.slf4j.LoggerFactory
+import com.shodaigram.backend.util.EtlConstants.DEFAULT_SIMILARITY_SCORE
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.math.BigDecimal
 
 /**
  * Processes IGDB's similar_games references after all games are loaded.
@@ -24,19 +23,23 @@ interface IgdbSimilarGamesService {
      * @param job ETL job for logging
      * @return Count of inserted similarity records
      */
-    fun processSimilarGames(similarGamesMapping: Map<Long, List<Long>>, job: EtlJob): Int
+    fun processSimilarGames(
+        similarGamesMapping: Map<Long, List<Long>>,
+        job: EtlJob,
+    ): Int
 }
 
 @Service
 class IgdbSimilarGamesServiceImpl(
     private val gameRepository: GameRepository,
     private val gameSimilarityRepository: GameSimilarityRepository,
-    private val etlJobLogRepository: EtlJobLogRepository,
-) : IgdbSimilarGamesService {
-    private val logger = LoggerFactory.getLogger(javaClass)
-
+    etlJobLogRepository: EtlJobLogRepository,
+) : IgdbSimilarGamesService, AbstractEtlService(etlJobLogRepository) {
     @Transactional
-    override fun processSimilarGames(similarGamesMapping: Map<Long, List<Long>>, job: EtlJob): Int {
+    override fun processSimilarGames(
+        similarGamesMapping: Map<Long, List<Long>>,
+        job: EtlJob,
+    ): Int {
         if (similarGamesMapping.isEmpty()) {
             logInfo(job, "No IGDB similar_games references to process")
             return 0
@@ -44,56 +47,42 @@ class IgdbSimilarGamesServiceImpl(
 
         logInfo(job, "Processing ${similarGamesMapping.size} IGDB similar_games references...")
 
-        val allIgdbIds = similarGamesMapping.keys + similarGamesMapping.values.flatten()
-        val igdbIdToGameId = gameRepository.findAllByIgdbIdIn(allIgdbIds.toList())
-            .associateBy({ it.igdbId }, { it.id })
+        val allIgdbIds = (similarGamesMapping.keys + similarGamesMapping.values.flatten()).toList()
+        val igdbIdToGame =
+            gameRepository.findAllByIgdbIdIn(allIgdbIds)
+                .associateBy { it.igdbId!! }
 
         var insertedCount = 0
         var skippedCount = 0
 
         similarGamesMapping.forEach { (sourceIgdbId, similarIgdbIds) ->
-            val sourceGameId = igdbIdToGameId[sourceIgdbId]
-            if (sourceGameId == null) {
+            val sourceGame = igdbIdToGame[sourceIgdbId]
+            if (sourceGame == null) {
                 logWarn(job, "Source game not found for IGDB ID: $sourceIgdbId")
                 skippedCount += similarIgdbIds.size
                 return@forEach
             }
 
             similarIgdbIds.forEach { similarIgdbId ->
-                val similarGameId = igdbIdToGameId[similarIgdbId]
+                val similarGameId = igdbIdToGame[similarIgdbId]
                 if (similarGameId == null) {
                     logger.debug("Similar game not found for IGDB ID: $similarIgdbId (source: $sourceIgdbId)")
                     skippedCount++
                     return@forEach
                 }
 
-                // Prevent self-references
-                if (sourceGameId == similarGameId) {
-                    skippedCount++
-                    return@forEach
-                }
+                similarIgdbIds.forEach { similarIgdbId ->
+                    val result = runCatching { processSimilarityPair(sourceGame, similarIgdbId, igdbIdToGame, job) }
 
-                try {
-                    val existing = gameSimilarityRepository.findByGameIdAndType(sourceGameId, "api_provided")
-                        .any { it.similarGame.igdbId == similarGameId }
-
-                    if (!existing) {
-
-//                        gameSimilarityRepository.save(
-//                            GameSimilarity(
-//                                gameId = sourceGameId,
-//                                similarGameId = similarGameId,
-//                                similarityScore = BigDecimal("0.75"), // Fixed baseline for API-provided
-//                                similarityType = SimilarityType.API_PROVIDED,
-//                            )
-//                        )
-                        insertedCount++
-                    } else {
-                        skippedCount++
-                    }
-                } catch (e: Exception) {
-                    logError(job, "Failed to save similarity: $sourceGameId → $similarGameId: ${e.message}")
-                    skippedCount++
+                    result.onSuccess { wasInserted -> if (wasInserted) insertedCount++ else skippedCount++ }
+                        .onFailure { e ->
+                            logError(
+                                job,
+                                "Failed to save similarity: ${sourceGame.id} → $similarIgdbId: ${e.message}",
+                                e as Exception,
+                            )
+                            skippedCount++
+                        }
                 }
             }
         }
@@ -102,18 +91,35 @@ class IgdbSimilarGamesServiceImpl(
         return insertedCount
     }
 
-    private fun logInfo(job: EtlJob, message: String) {
-        logger.info(message)
-        etlJobLogRepository.save(EtlJobLog(job = job, logLevel = EtlJobLog.LogLevel.INFO, message = message))
-    }
+    private fun processSimilarityPair(
+        sourceGame: Game,
+        similarIgdbId: Long,
+        igdbIdToGame: Map<Long, Game>,
+        job: EtlJob,
+    ): Boolean {
+        val similarGame = igdbIdToGame[similarIgdbId]
+        if (similarGame == null) {
+            logWarn(job, "Similar game not found for IGDB ID: $similarIgdbId")
+            return false
+        }
 
-    private fun logWarn(job: EtlJob, message: String) {
-        logger.warn(message)
-        etlJobLogRepository.save(EtlJobLog(job = job, logLevel = EtlJobLog.LogLevel.WARN, message = message))
-    }
+        if (sourceGame.id == similarGame.id) {
+            logWarn(job, "Skipping self-reference: game ID ${sourceGame.id}")
+            return false
+        }
 
-    private fun logError(job: EtlJob, message: String) {
-        logger.error(message)
-        etlJobLogRepository.save(EtlJobLog(job = job, logLevel = EtlJobLog.LogLevel.ERROR, message = message))
+        val exists = gameSimilarityRepository.existsByGamePair(sourceGame.id!!, similarGame.id!!)
+        if (exists) return false
+
+        val similarity =
+            GameSimilarity(
+                game = sourceGame,
+                similarGame = similarGame,
+                similarityScore = DEFAULT_SIMILARITY_SCORE,
+                similarityType = SimilarityType.API_PROVIDED,
+            )
+
+        gameSimilarityRepository.save(similarity)
+        return true
     }
 }

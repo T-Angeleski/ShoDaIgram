@@ -38,3 +38,6 @@ style:
     active: true
     maxLineLength: 120
     excludeCommentStatements: true
+  ReturnCount:
+    active: true
+    max: 5

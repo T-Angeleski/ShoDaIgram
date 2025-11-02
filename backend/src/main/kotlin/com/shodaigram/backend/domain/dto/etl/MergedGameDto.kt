@@ -47,6 +47,8 @@ data class MergedGameDto(
      * IGDB takes priority for core metadata.
      */
     companion object {
+        const val RAWG_RATING_MULTIPLIER = 20
+
         fun merge(
             rawg: RawgGameDto?,
             igdb: IgdbGameDto?,
@@ -71,7 +73,7 @@ data class MergedGameDto(
                 tags = buildTagSet(igdb, rawg),
                 developers = mergeCollections(igdb?.developers, rawg?.developers),
                 publishers = mergeCollections(igdb?.publishers, rawg?.publishers),
-                dataSources = setOfNotNull(rawg?.dataSource, igdb?.dataSource),
+                dataSources = buildDataSources(rawg, igdb),
                 mergeStrategy = getMergeStrategy(rawg, igdb),
             )
         }
@@ -94,13 +96,17 @@ data class MergedGameDto(
         private fun mergeCollections(
             igdbList: List<String>?,
             rawgList: List<String>?,
-        ): Set<String> = (igdbList ?: emptyList()).union(rawgList ?: emptyList()).toSet()
+        ): Set<String> = (igdbList ?: emptyList()).union(rawgList ?: emptyList())
 
         private fun averageRatings(
             igdbRating: Double?,
             rawgRating: Double?,
         ): Double? {
-            val ratings = listOfNotNull(igdbRating, rawgRating?.times(10)) // Normalize RAWG's 0-5 to 0-100
+            val ratings =
+                listOfNotNull(
+                    igdbRating,
+                    rawgRating?.times(RAWG_RATING_MULTIPLIER),
+                ) // RAWG uses 0-5 scale, normalize to 0-100
             return if (ratings.isEmpty()) null else ratings.average()
         }
 
@@ -119,13 +125,27 @@ data class MergedGameDto(
             return tags
         }
 
+        /**
+         * Build data sources set from available DTOs.
+         * ✅ Fixed: Both DTOs have a dataSource property now.
+         */
+        private fun buildDataSources(
+            rawg: RawgGameDto?,
+            igdb: IgdbGameDto?,
+        ): Set<String> {
+            val sources = mutableSetOf<String>()
+            if (rawg != null) sources.add("rawg")
+            if (igdb != null) sources.add(igdb.dataSource)
+            return sources
+        }
+
         private fun getMergeStrategy(
             rawg: RawgGameDto?,
             igdb: IgdbGameDto?,
         ): MergeStrategy {
             return when {
                 rawg == null || igdb == null -> MergeStrategy.SINGLE_SOURCE
-                rawg.slug == igdb.slug -> MergeStrategy.EXACT_SLUG_MATCH
+                rawg.slug.equals(igdb.slug, ignoreCase = true) -> MergeStrategy.EXACT_SLUG_MATCH
                 else -> MergeStrategy.FUZZY_NAME_MATCH // Will be determined in merge service
             }
         }

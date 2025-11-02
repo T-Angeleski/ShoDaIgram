@@ -26,17 +26,18 @@ data class RawgGameDto(
     @JsonProperty("tags") val tags: List<String> = emptyList(),
     @JsonProperty("fetched_at") val fetchedAt: OffsetDateTime,
 ) {
-    fun toEntity() = Game(
-        name = this.name,
-        slug = this.slug,
-        description = this.descriptionRaw,
-        releaseDate = this.released,
-        rating = this.rating?.toBigDecimal(),
-        ratingCount = this.ratingsCount ?: 0,
-        backgroundImageUrl = this.backgroundImage,
-        websiteUrl = this.website,
-        igdbId = null,
-        rawgId = this.rawgId,
-        updatedAt = LocalDateTime.now(),
-    )
+    fun toEntity() =
+        Game(
+            name = this.name,
+            slug = this.slug,
+            description = this.descriptionRaw,
+            releaseDate = this.released,
+            rating = this.rating?.toBigDecimal(),
+            ratingCount = this.ratingsCount ?: 0,
+            backgroundImageUrl = this.backgroundImage,
+            websiteUrl = this.website,
+            igdbId = null,
+            rawgId = this.rawgId,
+            updatedAt = LocalDateTime.now(),
+        )
 }

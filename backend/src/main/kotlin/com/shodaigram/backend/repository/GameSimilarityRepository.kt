@@ -1,6 +1,7 @@
 package com.shodaigram.backend.repository
 
 import com.shodaigram.backend.domain.entity.GameSimilarity
+import com.shodaigram.backend.domain.entity.SimilarityType
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -9,48 +10,44 @@ import org.springframework.stereotype.Repository
 @Repository
 interface GameSimilarityRepository : JpaRepository<GameSimilarity, Long> {
     /**
-     * Delete all similarities for a specific game before recomputation.
+     * Delete all similarities for a specific game.
      */
     @Modifying
-    @Query("DELETE FROM GameSimilarity gs WHERE gs.id = :id")
-    fun deleteByGameId(id: Long)
+    @Query("DELETE FROM GameSimilarity gs WHERE gs.game.id = :gameId")
+    fun deleteByGameId(gameId: Long)
 
     /**
-     * Find existing similarity records by type (avoid duplicates during ETL).
+     * Find existing similarity records by type.
      */
     @Query(
         """
         SELECT gs FROM GameSimilarity gs
-        WHERE gs.id = :id AND gs.similarityType = :type
+        WHERE gs.game.id = :gameId AND gs.similarityType = :type
         """,
     )
     fun findByGameIdAndType(
-        id: Long,
-        type: String,
+        gameId: Long,
+        type: SimilarityType,
     ): List<GameSimilarity>
 
     /**
-     * Batch insert API-provided similarities (from IGDB's similar_games).
-     * Returns count of inserted records.
+     * Check if a similarity relationship already exists.
      */
-    @Modifying
     @Query(
         """
-        INSERT INTO game_similarities (game_id, similar_game_id, similarity_score, similarity_type)
-        VALUES (:gameId, :similarGameId, :score, 'api_provided')
-        ON CONFLICT (game_id, similar_game_id) DO NOTHING
+        SELECT CASE WHEN COUNT(gs) > 0 THEN TRUE ELSE FALSE END
+        FROM GameSimilarity gs
+        WHERE gs.game.id = :gameId AND gs.similarGame.id = :similarGameId
         """,
-        nativeQuery = true,
     )
-    fun insertApiProvidedSimilarity(
+    fun existsByGamePair(
         gameId: Long,
         similarGameId: Long,
-        score: Double,
-    ): Int
+    ): Boolean
 
     /**
      * Count similarities by type (for ETL reporting).
      */
     @Query("SELECT COUNT(gs) FROM GameSimilarity gs WHERE gs.similarityType = :type")
-    fun countByType(type: String): Long
+    fun countByType(type: SimilarityType): Long
 }

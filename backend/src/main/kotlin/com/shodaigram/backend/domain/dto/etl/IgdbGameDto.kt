@@ -65,15 +65,16 @@ data class IgdbGameDto(
     @JsonProperty("data_source")
     val dataSource: String = "igdb",
 ) {
-    fun toEntity() = Game(
-        name = this.name,
-        slug = this.slug,
-        description = this.summary ?: this.storyline,
-        releaseDate = this.firstReleaseDate,
-        rating = this.totalRating?.toBigDecimal(),
-        backgroundImageUrl = this.coverUrl,
-        igdbId = this.igdbId,
-        rawgId = null,
-        updatedAt = LocalDateTime.now(),
-    )
+    fun toEntity() =
+        Game(
+            name = this.name,
+            slug = this.slug,
+            description = this.summary ?: this.storyline,
+            releaseDate = this.firstReleaseDate,
+            rating = this.totalRating?.toBigDecimal(),
+            backgroundImageUrl = this.coverUrl,
+            igdbId = this.igdbId,
+            rawgId = null,
+            updatedAt = LocalDateTime.now(),
+        )
 }
