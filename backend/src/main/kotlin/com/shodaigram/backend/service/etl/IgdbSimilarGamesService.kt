@@ -56,21 +56,23 @@ class IgdbSimilarGamesServiceImpl(
         var skippedCount = 0
 
         similarGamesMapping.forEach { (sourceIgdbId, similarIgdbIds) ->
-            val sourceGame = igdbIdToGame[sourceIgdbId]
-            if (sourceGame == null) {
-                logWarn(job, "Source game not found for IGDB ID: $sourceIgdbId")
-                skippedCount += similarIgdbIds.size
-                return@forEach
-            }
-
             similarIgdbIds.forEach { similarIgdbId ->
-                val result = runCatching { processSimilarityPair(sourceGame, similarIgdbId, igdbIdToGame, job) }
+                val result =
+                    runCatching {
+                        val sourceGame =
+                            igdbIdToGame[sourceIgdbId]
+                                ?: run {
+                                    logWarn(job, "Source game not found for IGDB ID: $sourceIgdbId")
+                                    return@runCatching false
+                                }
+                        processSimilarityPair(sourceGame, similarIgdbId, igdbIdToGame, job)
+                    }
 
                 result.onSuccess { wasInserted -> if (wasInserted) insertedCount++ else skippedCount++ }
                     .onFailure { e ->
                         logError(
                             job,
-                            "Failed to save similarity: ${sourceGame.id} → $similarIgdbId: ${e.message}",
+                            "Failed to save similarity: $sourceIgdbId → $similarIgdbId: ${e.message}",
                             e as Exception,
                         )
                         skippedCount++

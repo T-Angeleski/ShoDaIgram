@@ -40,3 +40,8 @@ springdoc:
     operations-sorter: alpha
     tags-sorter: alpha
   show-actuator: false
+
+etl:
+  data-files:
+    rawg-path: ${ETL_RAWG_FILE_PATH:src/main/data/rawg_games.json}
+    igdb-path: ${ETL_IGDB_FILE_PATH:src/main/data/igdb_games.json}

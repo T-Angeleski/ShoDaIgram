@@ -49,15 +49,16 @@ class TagExtractionServiceImpl(
             }
         }
 
-        // Load existing tag IDs for this game in one query
-        // todo check
-        val existingTagIds = game.gameTags.map { it.tag.id!! }.toSet()
+        val existingTagIds = gameTagRepository.findTagIdsByGameId(game.id!!)
+        val uniqueTagsWithIds = uniqueTags.map { (tag, category) ->
+            val tagId = requireNotNull(tag.id) { "Tag ID should not be null after save" }
+            Triple(tag, category, tagId)
+        }
 
-        // Create associations only for tags that don't exist yet
         val newGameTags =
-            uniqueTags
-                .filter { (tag, _) -> tag.id!! !in existingTagIds }
-                .map { (tag, category) ->
+            uniqueTagsWithIds
+                .filter { (_, _, tagId) -> tagId !in existingTagIds }
+                .map { (tag, category, _) ->
                     val weight = TagNormalizationUtils.getWeightForCategory(category)
                     GameTag(
                         game = game,

@@ -35,7 +35,7 @@ data class EtlJob(
     @Column(name = "error_message", columnDefinition = "TEXT")
     var errorMessage: String? = null,
     @Column(name = "error_details", columnDefinition = "TEXT")
-    val errorDetails: String? = null,
+    var errorDetails: String? = null,
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "started_at", nullable = false)
     val startedAt: LocalDateTime = LocalDateTime.now(),
@@ -47,9 +47,13 @@ data class EtlJob(
         completedAt = LocalDateTime.now()
     }
 
-    fun markFailed(error: String) {
+    fun markFailed(
+        error: String,
+        details: String? = null,
+    ) {
         status = JobStatus.FAILED
         errorMessage = error
+        errorDetails = details
         completedAt = LocalDateTime.now()
     }
 }

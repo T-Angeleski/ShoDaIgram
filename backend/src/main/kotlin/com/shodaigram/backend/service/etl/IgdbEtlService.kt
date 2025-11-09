@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.RuntimeJsonMappingException
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.shodaigram.backend.domain.dto.etl.IgdbGameDto
+import com.shodaigram.backend.domain.dto.etl.IgdbImportResult
 import com.shodaigram.backend.domain.entity.EtlJob
 import com.shodaigram.backend.domain.entity.Game
 import com.shodaigram.backend.domain.entity.TagCategory
@@ -24,12 +25,12 @@ interface IgdbEtlService {
      *
      * @param filePath Absolute path to JSON file
      * @param job ETL job entity for tracking
-     * @return (inserted count, skipped count, similar_games mapping
+     * @return Import result with insertion stats and similar games mapping
      */
     fun importIgdbGames(
         filePath: String,
         job: EtlJob,
-    ): Triple<Int, Int, Map<Long, List<Long>>>
+    ): IgdbImportResult
 }
 
 @Service
@@ -43,7 +44,7 @@ class IgdbEtlServiceImpl(
     override fun importIgdbGames(
         filePath: String,
         job: EtlJob,
-    ): Triple<Int, Int, Map<Long, List<Long>>> {
+    ): IgdbImportResult {
         val file = File(filePath)
         require(file.exists()) { "IGDB JSON file not found: $filePath" }
 
@@ -71,7 +72,11 @@ class IgdbEtlServiceImpl(
             "IGDB import complete. Inserted: $insertedCount, Skipped: $skippedCount, " +
                 "Similar games references: ${similarGamesMapping.size}",
         )
-        return Triple(insertedCount, skippedCount, similarGamesMapping)
+        return IgdbImportResult(
+            insertedCount = insertedCount,
+            skippedCount = skippedCount,
+            similarGamesMapping = similarGamesMapping,
+        )
     }
 
     private fun processIgdbChunk(

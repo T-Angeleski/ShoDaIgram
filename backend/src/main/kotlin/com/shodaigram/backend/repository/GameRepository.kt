@@ -34,7 +34,7 @@ interface GameRepository : JpaRepository<Game, Long> {
 
     /**
      * Merge RAWG game into IGDB game using pure SQL.
-     * Does everything: copy unique tags, update IGDB game, delete RAWG game.
+     * Does everything: copy unique tags, update IGDB game, delete source tags, delete RAWG game.
      */
     @Modifying
     @Query(
@@ -52,6 +52,10 @@ interface GameRepository : JpaRepository<Game, Long> {
                     SELECT 1 FROM game_tags gt2
                     WHERE gt2.game_id = :targetGameId AND gt2.tag_id = gt.tag_id
                 )
+                RETURNING tag_id
+            ),
+            delete_source_tags AS (
+                DELETE FROM game_tags WHERE game_id = :sourceGameId
             ),
             game_update AS (
                 UPDATE games g

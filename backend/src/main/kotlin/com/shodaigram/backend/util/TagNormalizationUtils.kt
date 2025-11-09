@@ -26,6 +26,17 @@ object TagNormalizationUtils {
     /**
      * Category-based weights for tag importance in recommendations.
      * Higher weights = stronger influence on similarity scores.
+     *
+     * Weight rationale:
+     * - **GENRE (1.00)**: Strongest signal for game similarity. Users searching for "RPG" expect RPG results.
+     * - **THEME (0.80)**: High importance. "Sci-Fi" or "Horror" themes strongly indicate similar experiences.
+     * - **KEYWORD (0.67)**: Medium-high. User-generated tags can be insightful but variable in quality.
+     * - **PLAYER_PERSPECTIVE (0.60)**: Moderately important. First-person vs third-person affects gameplay feel.
+     * - **PLATFORM (0.53)**: Medium. Platform overlap matters but doesn't define similarity (many games are multiplatform).
+     * - **FRANCHISE (0.47)**: Medium-low. Same franchise doesn't guarantee similar gameplay (e.g., spin-offs).
+     * - **DEVELOPER/PUBLISHER (0.40)**: Lower weight. Same studio doesn't always mean similar games (different genres, IPs).
+     *
+     * These weights are tuned for balancing content-based and collaborative filtering in the hybrid recommendation engine.
      */
     val CATEGORY_WEIGHTS =
         mapOf(
