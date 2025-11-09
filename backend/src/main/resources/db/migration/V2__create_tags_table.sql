@@ -4,9 +4,9 @@ CREATE TABLE tags
 
     name            VARCHAR(100) NOT NULL,
     normalized_name VARCHAR(100) NOT NULL,
-    category        VARCHAR(50)  NOT NULL CHECK ( category IN ('genre', 'theme', 'platform', 'game_mode', 'keyword',
-                                                               'player_perspective', 'franchise', 'developer',
-                                                               'publisher'
+    category        VARCHAR(50)  NOT NULL CHECK ( category IN ('GENRE', 'THEME', 'PLATFORM', 'GAME_MODE', 'KEYWORD',
+                                                               'PLAYER_PERSPECTIVE', 'FRANCHISE', 'DEVELOPER',
+                                                               'PUBLISHER'
         ) ),
 
     created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
