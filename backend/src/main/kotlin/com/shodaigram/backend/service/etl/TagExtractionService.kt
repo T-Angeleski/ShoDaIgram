@@ -50,10 +50,11 @@ class TagExtractionServiceImpl(
         }
 
         val existingTagIds = gameTagRepository.findTagIdsByGameId(game.id!!)
-        val uniqueTagsWithIds = uniqueTags.map { (tag, category) ->
-            val tagId = requireNotNull(tag.id) { "Tag ID should not be null after save" }
-            Triple(tag, category, tagId)
-        }
+        val uniqueTagsWithIds =
+            uniqueTags.map { (tag, category) ->
+                val tagId = requireNotNull(tag.id) { "Tag ID should not be null after save" }
+                Triple(tag, category, tagId)
+            }
 
         val newGameTags =
             uniqueTagsWithIds
