@@ -2,6 +2,7 @@ package com.shodaigram.backend.domain.dto.etl
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.shodaigram.backend.domain.entity.Game
+import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
@@ -71,10 +72,20 @@ data class IgdbGameDto(
             slug = this.slug,
             description = this.summary ?: this.storyline,
             releaseDate = this.firstReleaseDate,
-            rating = this.totalRating?.toBigDecimal(),
+            rating = this.totalRating?.let { normalizeIgdbRating(it) },
+            ratingCount = this.totalRatingCount ?: 0,
             backgroundImageUrl = this.coverUrl,
+            websiteUrl = this.url,
             igdbId = this.igdbId,
             rawgId = null,
             updatedAt = LocalDateTime.now(),
         )
+
+    /**
+     * Normalize IGDB rating from 0-100 scale to 0-10 scale for database consistency
+     */
+    private fun normalizeIgdbRating(igdbRating: Double): java.math.BigDecimal {
+        val normalized = (igdbRating / 10.0).coerceIn(0.0, 10.0)
+        return normalized.toBigDecimal().setScale(2, RoundingMode.HALF_UP)
+    }
 }

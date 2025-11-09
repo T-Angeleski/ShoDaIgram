@@ -6,8 +6,8 @@ CREATE TABLE game_similarities
     similar_game_id  BIGINT        NOT NULL REFERENCES games (id) ON DELETE CASCADE,
 
     similarity_score NUMERIC(5, 4) NOT NULL CHECK (similarity_score >= 0 AND similarity_score <= 1),
-    similarity_type  VARCHAR(20)   NOT NULL DEFAULT 'api_provided'
-        CHECK (similarity_type IN ('precomputed_tfidf', 'api_provided', 'tag_based')),
+    similarity_type  VARCHAR(20)   NOT NULL DEFAULT 'API_PROVIDED'
+        CHECK (similarity_type IN ('PRECOMPUTED_TF_IDF', 'API_PROVIDED', 'TAG_BASED')),
 
     computed_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

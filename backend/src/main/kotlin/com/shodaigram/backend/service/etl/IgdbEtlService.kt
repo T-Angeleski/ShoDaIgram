@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.RuntimeJsonMappingException
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.shodaigram.backend.domain.dto.etl.IgdbGameDto
 import com.shodaigram.backend.domain.entity.EtlJob
+import com.shodaigram.backend.domain.entity.Game
+import com.shodaigram.backend.domain.entity.TagCategory
 import com.shodaigram.backend.repository.EtlJobLogRepository
 import com.shodaigram.backend.repository.GameRepository
 import com.shodaigram.backend.util.EtlConstants.MAX_SIMILAR_GAMES
@@ -34,6 +36,7 @@ interface IgdbEtlService {
 class IgdbEtlServiceImpl(
     private val gameRepository: GameRepository,
     private val objectMapper: ObjectMapper,
+    private val tagExtractionService: TagExtractionService,
     etlJobLogRepository: EtlJobLogRepository,
 ) : IgdbEtlService, AbstractEtlService(etlJobLogRepository) {
     @Transactional
@@ -111,10 +114,69 @@ class IgdbEtlServiceImpl(
             false
         } else {
             val newGame = igdbGame.toEntity()
-            gameRepository.save(newGame)
+            val savedGame = gameRepository.save(newGame)
+
+            extractIgdbTags(savedGame, igdbGame)
             extractSimilarGames(igdbGame, similarGamesMapping)
+
             true
         }
+    }
+
+    /**
+     * Extract tags from IGDB game data.
+     * IGDB provides: genres, themes, game_modes, platforms, franchises, keywords,
+     * player_perspectives, developers, publishers
+     */
+    private fun extractIgdbTags(
+        game: Game,
+        igdbGame: IgdbGameDto,
+    ) {
+        val tagsByCategory =
+            buildMap {
+                if (igdbGame.genres.isNotEmpty()) {
+                    put(TagCategory.GENRE, igdbGame.genres)
+                }
+
+                if (igdbGame.themes.isNotEmpty()) {
+                    put(TagCategory.THEME, igdbGame.themes)
+                }
+
+                if (igdbGame.gameModes.isNotEmpty()) {
+                    put(TagCategory.GAME_MODE, igdbGame.gameModes)
+                }
+
+                if (igdbGame.platforms.isNotEmpty()) {
+                    put(TagCategory.PLATFORM, igdbGame.platforms)
+                }
+
+                if (igdbGame.franchises.isNotEmpty()) {
+                    put(TagCategory.FRANCHISE, igdbGame.franchises)
+                }
+
+                if (igdbGame.keywords.isNotEmpty()) {
+                    put(TagCategory.KEYWORD, igdbGame.keywords)
+                }
+
+                if (igdbGame.playerPerspectives.isNotEmpty()) {
+                    put(
+                        TagCategory.PLAYER_PERSPECTIVE,
+                        igdbGame.playerPerspectives,
+                    )
+                }
+
+                // Developers
+                if (igdbGame.developers.isNotEmpty()) {
+                    put(TagCategory.DEVELOPER, igdbGame.developers)
+                }
+
+                // Publishers
+                if (igdbGame.publishers.isNotEmpty()) {
+                    put(TagCategory.PUBLISHER, igdbGame.publishers)
+                }
+            }
+
+        tagExtractionService.extractAndAssociateTags(game, tagsByCategory)
     }
 
     private fun extractSimilarGames(

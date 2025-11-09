@@ -2,6 +2,7 @@ package com.shodaigram.backend.repository
 
 import com.shodaigram.backend.domain.entity.Game
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 
@@ -14,39 +15,15 @@ interface GameRepository : JpaRepository<Game, Long> {
 
     fun findByRawgId(rawgId: Long): Game?
 
-    /**
-     * Find games with similar names and matching release year
-     * Uses PostgreSQL SIMILARITY function
-     */
     @Query(
-        """
-        SELECT * FROM games g
-        WHERE EXTRACT(YEAR FROM g.release_date) = :releaseYear
-        AND SIMILARITY(LOWER(g.name), LOWER(:name)) > 0.6
-        ORDER BY SIMILARITY(LOWER(g.name), LOWER(:name)) DESC
-        """,
-        nativeQuery = true,
+        "SELECT DISTINCT g FROM Game g LEFT JOIN FETCH g.gameTags gt LEFT JOIN FETCH gt.tag WHERE g.rawgId IS NOT NULL",
     )
-    fun findSimilarByNameAndYear(
-        name: String,
-        releaseYear: Int,
-    ): List<Game>
+    fun findAllRawgGamesWithTags(): List<Game>
 
-    /**
-     * Check if a game already exists by any identifier (IGDB/RAWG ID or slug)
-     */
     @Query(
-        """
-        SELECT CASE WHEN COUNT(g) > 0 THEN TRUE ELSE FALSE END
-        FROM Game g
-        WHERE g.igdbId = :igdbId OR g.rawgId = :rawgId OR LOWER(g.slug) = LOWER(:slug)
-        """,
+        "SELECT DISTINCT g FROM Game g LEFT JOIN FETCH g.gameTags gt LEFT JOIN FETCH gt.tag WHERE g.igdbId IS NOT NULL",
     )
-    fun existsByAnyIdentifier(
-        igdbId: Long?,
-        rawgId: Long?,
-        slug: String,
-    ): Boolean
+    fun findAllIgdbGamesWithTags(): List<Game>
 
     /**
      * Batch lookup: Find all games by IGDB IDs.
@@ -54,4 +31,52 @@ interface GameRepository : JpaRepository<Game, Long> {
      */
     @Query("SELECT g FROM Game g WHERE g.igdbId IN :igdbIds")
     fun findAllByIgdbIdIn(igdbIds: List<Long>): List<Game>
+
+    /**
+     * Merge RAWG game into IGDB game using pure SQL.
+     * Does everything: copy unique tags, update IGDB game, delete RAWG game.
+     */
+    @Modifying
+    @Query(
+        value = """
+            WITH source_data AS (
+                SELECT rawg_id, rating, rating_count, website_url, background_image_url
+                FROM games WHERE id = :sourceGameId
+            ),
+            tag_copy AS (
+                INSERT INTO game_tags (game_id, tag_id, weight, created_at)
+                SELECT :targetGameId, gt.tag_id, gt.weight, CURRENT_TIMESTAMP
+                FROM game_tags gt
+                WHERE gt.game_id = :sourceGameId
+                AND NOT EXISTS (
+                    SELECT 1 FROM game_tags gt2
+                    WHERE gt2.game_id = :targetGameId AND gt2.tag_id = gt.tag_id
+                )
+            ),
+            game_update AS (
+                UPDATE games g
+                SET rawg_id = s.rawg_id,
+                    rating = (
+                        CASE
+                            WHEN g.rating IS NOT NULL AND s.rating IS NOT NULL
+                            THEN (g.rating + s.rating) / 2
+                            ELSE COALESCE(g.rating, s.rating)
+                        END
+                    ),
+                    rating_count = g.rating_count + s.rating_count,
+                    website_url = COALESCE(g.website_url, s.website_url),
+                    background_image_url = COALESCE(g.background_image_url, s.background_image_url),
+                    updated_at = CURRENT_TIMESTAMP
+                FROM source_data s
+                WHERE g.id = :targetGameId
+                RETURNING g.id
+            )
+            DELETE FROM games WHERE id = :sourceGameId
+        """,
+        nativeQuery = true,
+    )
+    fun mergeGameData(
+        sourceGameId: Long,
+        targetGameId: Long,
+    )
 }

@@ -2,6 +2,7 @@ package com.shodaigram.backend.domain.dto.etl
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.shodaigram.backend.domain.entity.Game
+import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
@@ -32,7 +33,7 @@ data class RawgGameDto(
             slug = this.slug,
             description = this.descriptionRaw,
             releaseDate = this.released,
-            rating = this.rating?.toBigDecimal(),
+            rating = this.rating?.let { normalizeRawgRating(it) },
             ratingCount = this.ratingsCount ?: 0,
             backgroundImageUrl = this.backgroundImage,
             websiteUrl = this.website,
@@ -40,4 +41,12 @@ data class RawgGameDto(
             rawgId = this.rawgId,
             updatedAt = LocalDateTime.now(),
         )
+
+    /**
+     * Normalize RAWG rating from 0-5 scale to 0-10 scale for database consistency
+     */
+    private fun normalizeRawgRating(rawgRating: Double): java.math.BigDecimal {
+        val normalized = (rawgRating * 2.0).coerceIn(0.0, 10.0)
+        return normalized.toBigDecimal().setScale(2, RoundingMode.HALF_UP)
+    }
 }

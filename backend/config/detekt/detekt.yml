@@ -20,7 +20,7 @@ complexity:
   LongParameterList:
     active: true
     functionThreshold: 6
-    constructorThreshold: 7
+    constructorThreshold: 10
 
 style:
   active: true

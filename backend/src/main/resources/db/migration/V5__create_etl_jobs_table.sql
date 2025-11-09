@@ -2,8 +2,8 @@ CREATE TABLE etl_jobs
 (
     id                BIGSERIAL PRIMARY KEY,
 
-    source            VARCHAR(10) NOT NULL CHECK (source IN ('igdb', 'rawg', 'merged')),
-    status            VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'completed', 'failed', 'partial')),
+    source            VARCHAR(10) NOT NULL CHECK (source IN ('IGDB', 'RAWG', 'MERGED')),
+    status            VARCHAR(20) NOT NULL CHECK (status IN ('PENDING', 'COMPLETED', 'FAILED', 'PARTIAL')),
 
     total_records     INTEGER     NOT NULL DEFAULT 0,
     processed_records INTEGER     NOT NULL DEFAULT 0,

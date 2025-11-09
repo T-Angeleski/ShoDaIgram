@@ -37,7 +37,7 @@ data class Tag(
     @Column(name = "created_at", nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
     @OneToMany(mappedBy = "tag", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val gametags: MutableSet<GameTag> = mutableSetOf(),
+    val gameTags: MutableSet<GameTag> = mutableSetOf(),
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

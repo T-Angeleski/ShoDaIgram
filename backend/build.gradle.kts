@@ -31,7 +31,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.apache.lucene:lucene-core:9.10.0")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("org.springdoc:springdoc-openapi-ui:1.6.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
     implementation("org.flywaydb:flyway-core") {
         version {
             strictly("10.20.1")

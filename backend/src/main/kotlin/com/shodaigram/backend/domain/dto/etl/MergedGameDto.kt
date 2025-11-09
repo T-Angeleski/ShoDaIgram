@@ -45,10 +45,9 @@ data class MergedGameDto(
     /**
      * Combines two games into a merged representation.
      * IGDB takes priority for core metadata.
+     * Note: Ratings should already be normalized to 0-10 scale in DTOs before merging
      */
     companion object {
-        const val RAWG_RATING_MULTIPLIER = 20
-
         fun merge(
             rawg: RawgGameDto?,
             igdb: IgdbGameDto?,
@@ -98,15 +97,15 @@ data class MergedGameDto(
             rawgList: List<String>?,
         ): Set<String> = (igdbList ?: emptyList()).union(rawgList ?: emptyList())
 
+        /**
+         * Average ratings from both sources.
+         * Both RAWG (0-5 → 0-10) and IGDB (0-100 → 0-10) are normalized before this point.
+         */
         private fun averageRatings(
             igdbRating: Double?,
             rawgRating: Double?,
         ): Double? {
-            val ratings =
-                listOfNotNull(
-                    igdbRating,
-                    rawgRating?.times(RAWG_RATING_MULTIPLIER),
-                ) // RAWG uses 0-5 scale, normalize to 0-100
+            val ratings = listOfNotNull(igdbRating, rawgRating)
             return if (ratings.isEmpty()) null else ratings.average()
         }
 
@@ -127,7 +126,6 @@ data class MergedGameDto(
 
         /**
          * Build data sources set from available DTOs.
-         * ✅ Fixed: Both DTOs have a dataSource property now.
          */
         private fun buildDataSources(
             rawg: RawgGameDto?,
