@@ -38,7 +38,6 @@ class EtlOrchestratorServiceImpl(
     private val etlJobRepository: EtlJobRepository,
     private val rawgEtlService: RawgEtlService,
     private val igdbEtlService: IgdbEtlService,
-    private val igdbSimilarGamesService: IgdbSimilarGamesService,
     private val gameMergeService: GameMergeService,
     etlJobLogRepository: EtlJobLogRepository,
 ) : EtlOrchestratorService, AbstractEtlService(etlJobLogRepository) {
@@ -66,13 +65,7 @@ class EtlOrchestratorServiceImpl(
                 igdbEtlService.importIgdbGames(igdbFilePath, igdbJob)
             }
 
-        logInfo(igdbJob, "Phase 3: Processing IGDB similar_games references...")
-        val similaritiesInserted =
-            executeSafePhase(igdbJob, "Similar games processing") {
-                igdbSimilarGamesService.processSimilarGames(igdbResult.similarGamesMapping, igdbJob)
-            }
-
-        logInfo(igdbJob, "Phase 4: Detecting and merging duplicates...")
+        logInfo(igdbJob, "Phase 3: Detecting and merging duplicates...")
         val gamesMerged =
             executeSafePhase(igdbJob, "Game merge") {
                 gameMergeService.detectAndMergeDuplicates(igdbJob)
@@ -90,7 +83,6 @@ class EtlOrchestratorServiceImpl(
             rawgSkipped = rawgSkipped,
             igdbInserted = igdbResult.insertedCount,
             igdbSkipped = igdbResult.skippedCount,
-            similaritiesInserted = similaritiesInserted,
             gamesMerged = gamesMerged,
             tagsNormalized = 0,
             durationMs = durationMs,

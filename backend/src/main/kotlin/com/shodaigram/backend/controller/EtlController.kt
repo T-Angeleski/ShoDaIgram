@@ -3,7 +3,9 @@ package com.shodaigram.backend.controller
 import com.shodaigram.backend.config.EtlProperties
 import com.shodaigram.backend.domain.dto.etl.EtlReport
 import com.shodaigram.backend.domain.dto.etl.EtlReportDto
+import com.shodaigram.backend.domain.dto.similarity.SimilarityComputationResponse
 import com.shodaigram.backend.service.etl.EtlOrchestratorService
+import com.shodaigram.backend.service.similarity.TfIdfSimilarityService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "ETL", description = "Game data ETL pipeline management")
 class EtlController(
     private val etlOrchestratorService: EtlOrchestratorService,
+    private val tfIdfSimilarityService: TfIdfSimilarityService,
     private val etlProperties: EtlProperties,
 ) {
     @PostMapping("/run")
@@ -40,5 +43,15 @@ class EtlController(
                 igdbFilePath = etlProperties.dataFiles.igdbPath,
             )
         return ResponseEntity.ok(report.toDto())
+    }
+
+    @PostMapping("/compute-similarities")
+    @Operation(
+        summary = "Compute TF-IDF similarities",
+        description = "Precompute game-to-game similarities using TF-IDF algorithm and store in database",
+    )
+    fun computeSimilarities(): ResponseEntity<SimilarityComputationResponse> {
+        val response = tfIdfSimilarityService.computeAllSimilarities()
+        return ResponseEntity.ok(response)
     }
 }

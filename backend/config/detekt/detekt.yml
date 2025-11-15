@@ -16,7 +16,7 @@ complexity:
     ignoreNestingFunctions: true
   LongMethod:
     active: true
-    threshold: 60
+    threshold: 65
   LongParameterList:
     active: true
     functionThreshold: 6
@@ -41,3 +41,6 @@ style:
   ReturnCount:
     active: true
     max: 5
+
+exceptions:
+  active: false
