@@ -14,6 +14,7 @@ import com.shodaigram.backend.repository.GameTagRepository
 import com.shodaigram.backend.util.LuceneIndexBuilder
 import com.shodaigram.backend.util.SimilarityConstants
 import com.shodaigram.backend.util.SimilarityConstants.BATCH_SIZE
+import com.shodaigram.backend.util.SimilarityConstants.LOG_INTERVAL
 import com.shodaigram.backend.util.TfIdfCalculator
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.index.DirectoryReader
@@ -228,7 +229,7 @@ class TfIdfSimilarityServiceImpl(
                     gameIdToIndex[game.id!!] = docIndex
                     docIndex++
 
-                    if ((index + 1) % 500 == 0 || index == allGames.size - 1) {
+                    if ((index + 1) % LOG_INTERVAL == 0 || index == allGames.size - 1) {
                         logger.info("Indexed ${index + 1}/${allGames.size} games...")
                     }
                 }
@@ -242,7 +243,7 @@ class TfIdfSimilarityServiceImpl(
             gameIdToIndex.entries.forEachIndexed { index, (gameId, docIdx) ->
                 gameVectors[gameId] = buildGameVector(reader, docIdx)
 
-                if ((index + 1) % 500 == 0 || index == gameIdToIndex.size - 1) {
+                if ((index + 1) % LOG_INTERVAL == 0 || index == gameIdToIndex.size - 1) {
                     logger.info("Extracted vectors for ${index + 1}/${gameIdToIndex.size} games...")
                 }
             }
@@ -265,7 +266,6 @@ class TfIdfSimilarityServiceImpl(
     ): List<GameSimilarity> {
         try {
             val sourceVector = gameVectors[sourceGame.id!!] ?: return emptyList()
-
 
             if (sourceVector.isEmpty()) {
                 logger.warn("Empty vector for game '${sourceGame.name}' (ID: ${sourceGame.id})")
@@ -301,7 +301,6 @@ class TfIdfSimilarityServiceImpl(
                     similarityType = SimilarityType.PRECOMPUTED_TF_IDF,
                 )
             }
-
         } catch (e: ArithmeticException) {
             throw SimilarityComputationException(
                 "Failed to compute similarities from vectors",
