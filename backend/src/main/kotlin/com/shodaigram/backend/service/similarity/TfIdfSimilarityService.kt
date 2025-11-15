@@ -96,10 +96,13 @@ class TfIdfSimilarityServiceImpl(
         val similarities = computeSimilaritiesFromVectors(game, gameVectors, allGames)
         directory.close()
 
+        gameSimilarityRepository.deletePrecomputedSimilaritiesByGameId(game.id!!)
+        val savedSimilarities = gameSimilarityRepository.saveAll(similarities)
+
         val duration = System.currentTimeMillis() - startTime
         logger.info("Computed ${similarities.size} similarities for '${game.name}' in ${duration}ms")
 
-        return similarities
+        return savedSimilarities
     }
 
     @Transactional
@@ -119,12 +122,17 @@ class TfIdfSimilarityServiceImpl(
         logger.info("Loaded ${allGames.size} games with descriptions")
 
         val (directory, gameVectors) = buildIndexAndExtractVectors(allGames)
-        logger.info("Built Lucene index and extracted ${gameVectors.size} game vectors")
 
         var totalSimilarities = 0
         var processedGames = 0
+        val totalChunks = (allGames.size + BATCH_SIZE - 1) / BATCH_SIZE
 
-        allGames.chunked(BATCH_SIZE).forEach { chunk ->
+        logger.info("Starting similarity computation for ${allGames.size} games in $totalChunks batches...")
+
+        allGames.chunked(BATCH_SIZE).forEachIndexed { chunkIndex, chunk ->
+            val allSimilaritiesInChunk = mutableListOf<GameSimilarity>()
+            val successfulGameIds = mutableListOf<Long>()
+
             chunk.forEach { sourceGame ->
                 try {
                     val similarities =
@@ -133,6 +141,8 @@ class TfIdfSimilarityServiceImpl(
                             gameVectors,
                             allGames,
                         )
+                    allSimilaritiesInChunk.addAll(similarities)
+                    successfulGameIds.add(sourceGame.id!!)
                     totalSimilarities += similarities.size
                     processedGames++
 
@@ -144,6 +154,16 @@ class TfIdfSimilarityServiceImpl(
                 } catch (e: InvalidGameDataException) {
                     logger.error("Failed to compute similarities for '${sourceGame.name}'", e)
                 }
+            }
+
+            if (successfulGameIds.isNotEmpty()) {
+                gameSimilarityRepository.deletePrecomputedSimilaritiesByGameIds(successfulGameIds)
+                gameSimilarityRepository.saveAll(allSimilaritiesInChunk)
+                logger.info(
+                    "Batch ${chunkIndex + 1}/$totalChunks complete: " +
+                        "Saved ${allSimilaritiesInChunk.size} similarities for ${successfulGameIds.size} games " +
+                        "(Progress: $processedGames/${allGames.size} games, $totalSimilarities total similarities)",
+                )
             }
         }
 
@@ -191,6 +211,7 @@ class TfIdfSimilarityServiceImpl(
         allGames: List<Game>,
     ): Pair<ByteBuffersDirectory, Map<Long, Map<String, Float>>> {
         try {
+            logger.info("Building Lucene index for ${allGames.size} games...")
             val directory = ByteBuffersDirectory()
             val analyzer = StandardAnalyzer()
             val config = IndexWriterConfig(analyzer)
@@ -199,25 +220,35 @@ class TfIdfSimilarityServiceImpl(
             val gameIdToIndex = mutableMapOf<Long, Int>()
             var docIndex = 0
 
-            allGames.forEach { game ->
+            allGames.forEachIndexed { index, game ->
                 if (!game.description.isNullOrBlank()) {
                     val tags = gameTagRepository.findByGameId(game.id!!).toSet()
                     val doc = indexBuilder.buildGameDocument(game, tags)
                     writer.addDocument(doc)
                     gameIdToIndex[game.id!!] = docIndex
                     docIndex++
+
+                    if ((index + 1) % 500 == 0 || index == allGames.size - 1) {
+                        logger.info("Indexed ${index + 1}/${allGames.size} games...")
+                    }
                 }
             }
             writer.close()
+            logger.info("Lucene index built successfully. Extracting TF-IDF vectors...")
 
             val reader = DirectoryReader.open(directory)
             val gameVectors = mutableMapOf<Long, Map<String, Float>>()
 
-            gameIdToIndex.forEach { (gameId, index) ->
-                gameVectors[gameId] = buildGameVector(reader, index)
+            gameIdToIndex.entries.forEachIndexed { index, (gameId, docIdx) ->
+                gameVectors[gameId] = buildGameVector(reader, docIdx)
+
+                if ((index + 1) % 500 == 0 || index == gameIdToIndex.size - 1) {
+                    logger.info("Extracted vectors for ${index + 1}/${gameIdToIndex.size} games...")
+                }
             }
 
             reader.close()
+            logger.info("Vector extraction complete. Ready to compute similarities.")
 
             return Pair(directory, gameVectors)
         } catch (e: IOException) {
@@ -235,11 +266,6 @@ class TfIdfSimilarityServiceImpl(
         try {
             val sourceVector = gameVectors[sourceGame.id!!] ?: return emptyList()
 
-            logger.info(
-                "Computing similarities for '${sourceGame.name}': " +
-                    "vector size=${sourceVector.size}, " +
-                    "candidate games=${allGames.size}",
-            )
 
             if (sourceVector.isEmpty()) {
                 logger.warn("Empty vector for game '${sourceGame.name}' (ID: ${sourceGame.id})")
@@ -263,21 +289,19 @@ class TfIdfSimilarityServiceImpl(
                     .sortedByDescending { it.second }
                     .take(SimilarityConstants.TOP_N_SIMILAR_GAMES)
 
-            val newSimilarities = scoredGames.map { (targetGame, similarity) ->
+            return scoredGames.map { (targetGame, similarity) ->
                 GameSimilarity(
                     game = sourceGame,
                     similarGame = targetGame,
                     similarityScore =
                         BigDecimal(similarity).setScale(
                             SimilarityConstants.SIMILARITY_SCORE_SCALE,
-                            RoundingMode.HALF_UP
+                            RoundingMode.HALF_UP,
                         ),
-                    similarityType = SimilarityType.PRECOMPUTED_TF_IDF
+                    similarityType = SimilarityType.PRECOMPUTED_TF_IDF,
                 )
             }
 
-            gameSimilarityRepository.deletePrecomputedSimilaritiesByGameId(sourceGame.id!!)
-            return gameSimilarityRepository.saveAll(newSimilarities)
         } catch (e: ArithmeticException) {
             throw SimilarityComputationException(
                 "Failed to compute similarities from vectors",

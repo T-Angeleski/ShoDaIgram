@@ -72,6 +72,22 @@ interface GameSimilarityRepository : JpaRepository<GameSimilarity, Long> {
     )
 
     /**
+     * Delete all precomputed TF-IDF similarities for multiple games (bulk operation).
+     * Used for batched similarity computation to reduce database round-trips.
+     */
+    @Modifying(clearAutomatically = true)
+    @Query(
+        """
+        DELETE FROM GameSimilarity gs
+        WHERE gs.game.id IN :gameIds
+        AND gs.similarityType = 'PRECOMPUTED_TF_IDF'
+        """,
+    )
+    fun deletePrecomputedSimilaritiesByGameIds(
+        @Param("gameIds") gameIds: List<Long>,
+    )
+
+    /**
      * Delete all precomputed TF-IDF similarities.
      */
     @Modifying
