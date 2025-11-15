@@ -139,6 +139,26 @@ class GlobalExceptionHandler {
     }
 
     /**
+     * Handles game not found exception
+     */
+    @ExceptionHandler(GameNotFoundException::class)
+    fun handleGameNotFoundException(
+        ex: GameNotFoundException,
+        request: WebRequest,
+    ): ProblemDetail {
+        val problem =
+            ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND,
+                ex.message ?: "Game not found",
+            )
+        problem.title = "Game Not Found"
+        problem.type = URI.create("/problems/game-not-found")
+        problem.setProperty("timestamp", Instant.now())
+        problem.setProperty("path", extractPath(request))
+        return problem
+    }
+
+    /**
      * Catches all other similarity-related exceptions.
      */
     @ExceptionHandler(SimilarityException::class)

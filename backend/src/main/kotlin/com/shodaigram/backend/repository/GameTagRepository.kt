@@ -1,6 +1,7 @@
 package com.shodaigram.backend.repository
 
 import com.shodaigram.backend.domain.entity.GameTag
+import com.shodaigram.backend.domain.entity.Tag
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
@@ -18,4 +19,22 @@ interface GameTagRepository : JpaRepository<GameTag, Long> {
      */
     @Query("SELECT gt FROM GameTag gt JOIN FETCH gt.tag WHERE gt.game.id = :gameId")
     fun findByGameId(gameId: Long): List<GameTag>
+
+    /**
+     * Find shared tags between two games for explainability.
+     */
+    @Query(
+        """
+        SELECT DISTINCT t
+        FROM GameTag gt1
+        JOIN GameTag gt2 ON gt1.tag.id = gt2.tag.id
+        JOIN Tag t ON gt1.tag.id = t.id
+        WHERE gt1.game.id = :gameId1
+          AND gt2.game.id = :gameId2
+        """,
+    )
+    fun findSharedTags(
+        gameId1: Long,
+        gameId2: Long,
+    ): List<Tag>
 }

@@ -34,6 +34,7 @@ interface GameSimilarityRepository : JpaRepository<GameSimilarity, Long> {
         WHERE gs.game.id = :gameId
         AND gs.similarityType = 'PRECOMPUTED_TF_IDF'
         ORDER BY gs.similarityScore DESC
+        LIMIT :limit
         """,
     )
     fun findTopSimilarGames(

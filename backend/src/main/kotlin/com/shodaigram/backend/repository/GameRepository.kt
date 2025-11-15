@@ -26,13 +26,6 @@ interface GameRepository : JpaRepository<Game, Long> {
     fun findAllIgdbGamesWithTags(): List<Game>
 
     /**
-     * Batch lookup: Find all games by IGDB IDs.
-     * Used for resolving IGDB's similar_games references.
-     */
-    @Query("SELECT g FROM Game g WHERE g.igdbId IN :igdbIds")
-    fun findAllByIgdbIdIn(igdbIds: List<Long>): List<Game>
-
-    /**
      * Merge RAWG game into IGDB game using pure SQL.
      * Does everything: copy unique tags, update IGDB game, delete source tags, delete RAWG game.
      */
@@ -83,4 +76,44 @@ interface GameRepository : JpaRepository<Game, Long> {
         sourceGameId: Long,
         targetGameId: Long,
     )
+
+    /**
+     * Full-text search using PostgreSQL BM25-like ranking.
+     * Searches across game name (weight A) and description (weight B).
+     */
+    @Query(
+        value = """
+            SELECT g.*,
+                TS_RANK_CD(g.search_vector, PLAINTO_TSQUERY('english', :query)) AS rank
+            FROM games g
+            WHERE g.search_vector @@ PLAINTO_TSQUERY('english', :query)
+            ORDER BY rank DESC
+            LIMIT :limit OFFSET :offset
+        """,
+        nativeQuery = true,
+    )
+    fun searchGamesByQuery(
+        query: String,
+        limit: Int,
+        offset: Int,
+    ): List<Game>
+
+    /**
+     * Count total search results for pagination.
+     */
+    @Query(
+        value = """
+        SELECT COUNT(*)
+        FROM games g
+        WHERE g.search_vector @@ PLAINTO_TSQUERY('english', :query)
+    """,
+        nativeQuery = true,
+    )
+    fun countSearchResults(query: String): Long
+
+    /**
+     * Find game by slug for pretty URLs.
+     */
+    @Query("SELECT g FROM Game g WHERE LOWER(g.slug) = LOWER(:slug)")
+    fun findBySlug(slug: String): Game?
 }

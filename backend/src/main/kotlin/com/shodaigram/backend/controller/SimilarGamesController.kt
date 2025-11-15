@@ -1,6 +1,5 @@
 package com.shodaigram.backend.controller
 
-import com.shodaigram.backend.domain.dto.similarity.SimilarGameDto
 import com.shodaigram.backend.service.similarity.TfIdfSimilarityService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -14,20 +13,34 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/games")
-@Tag(name = "Similar Games", description = "Game similarity and recommendation endpoints")
+@Tag(name = "Game Recommendations", description = "Game recommendation endpoints based on TF-IDF similarity")
 class SimilarGamesController(
     private val tfIdfSimilarityService: TfIdfSimilarityService,
 ) {
-    @GetMapping("/{id}/similar")
+    @GetMapping("/{id}/recommendations")
     @Operation(
-        summary = "Get similar games",
-        description = "Returns games similar to the specified game based on TF-IDF content similarity",
+        summary = "Get game recommendations",
+        description = """
+            Returns games similar to the specified game based on TF-IDF content similarity.
+
+            Optionally include explainability to show why games are recommended:
+            - Shared genres, themes, franchises
+            - Description similarity analysis
+
+            Example: `/api/games/123/recommendations?limit=10&explainability=true`
+        """,
     )
-    fun getSimilarGames(
+    fun getRecommendations(
         @Parameter(description = "Game ID") @PathVariable id: Long,
         @Parameter(description = "Maximum number of results") @RequestParam(defaultValue = "10") limit: Int,
-    ): ResponseEntity<List<SimilarGameDto>> {
-        val similarGames = tfIdfSimilarityService.getSimilarGames(id, limit)
-        return ResponseEntity.ok(similarGames)
+        @Parameter(description = "Include match reasons") @RequestParam(defaultValue = "false") explainability: Boolean,
+    ): ResponseEntity<*> {
+        return if (explainability) {
+            val recommendations = tfIdfSimilarityService.getSimilarGamesWithReasons(id, limit)
+            ResponseEntity.ok(recommendations)
+        } else {
+            val recommendations = tfIdfSimilarityService.getSimilarGames(id, limit)
+            ResponseEntity.ok(recommendations)
+        }
     }
 }
