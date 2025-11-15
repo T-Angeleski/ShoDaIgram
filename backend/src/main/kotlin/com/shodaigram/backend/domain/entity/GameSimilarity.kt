@@ -44,7 +44,7 @@ data class GameSimilarity(
 }
 
 enum class SimilarityType {
-    PRECOMPUTED_TFIDF,
+    PRECOMPUTED_TF_IDF,
     API_PROVIDED,
     TAG_BASED,
 }

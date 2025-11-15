@@ -12,4 +12,10 @@ interface GameTagRepository : JpaRepository<GameTag, Long> {
      */
     @Query("SELECT gt.tag.id FROM GameTag gt WHERE gt.game.id = :gameId")
     fun findTagIdsByGameId(gameId: Long): Set<Long>
+
+    /**
+     * Find all GameTag entities for a specific game (includes full Tag entity).
+     */
+    @Query("SELECT gt FROM GameTag gt JOIN FETCH gt.tag WHERE gt.game.id = :gameId")
+    fun findByGameId(gameId: Long): List<GameTag>
 }

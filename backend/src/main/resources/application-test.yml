@@ -6,24 +6,29 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop  # Auto-create schema for test, drop on shutdown
+      ddl-auto: create-drop
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-    show-sql: true
+        format_sql: false
+    show-sql: false
   flyway:
     enabled: true
-    clean-disabled: false  # Allow cleaning test database
+    clean-disabled: false
     baseline-on-migrate: true
     locations: classpath:db/migration
-# ETL Configuration - pointing to test data files
+
 etl:
   data-files:
     rawg-path: ${ETL_RAWG_FILE_PATH:src/main/resources/test-data/rawg_games_sample.json}
     igdb-path: ${ETL_IGDB_FILE_PATH:src/main/resources/test-data/igdb_games_sample.json}
+
 logging:
   level:
-    org.flywaydb: DEBUG
-    org.hibernate.SQL: DEBUG
-    com.shodaigram.backend: DEBUG
+    root: INFO
+    org.flywaydb: INFO
+    org.hibernate: WARN
+    org.hibernate.SQL: WARN
+    org.springframework.jdbc: WARN
+    org.springframework.orm: WARN
+    com.shodaigram.backend: DEBUG  # Keep your app logs visible

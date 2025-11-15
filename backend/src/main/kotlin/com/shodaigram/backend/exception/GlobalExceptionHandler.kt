@@ -78,6 +78,86 @@ class GlobalExceptionHandler {
         return problem
     }
 
+    /**
+     * Handles Lucene indexing exceptions during similarity computation.
+     */
+    @ExceptionHandler(LuceneIndexException::class)
+    fun handleLuceneIndexException(
+        ex: LuceneIndexException,
+        request: WebRequest,
+    ): ProblemDetail {
+        val problem =
+            ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                ex.message ?: "Failed to build search index for similarity computation",
+            )
+        problem.title = "Search Index Error"
+        problem.type = URI.create("/problems/similarity-index-error")
+        problem.setProperty("timestamp", Instant.now())
+        problem.setProperty("path", extractPath(request))
+        return problem
+    }
+
+    /**
+     * Handles TF-IDF similarity computation exceptions.
+     */
+    @ExceptionHandler(SimilarityComputationException::class)
+    fun handleSimilarityComputationException(
+        ex: SimilarityComputationException,
+        request: WebRequest,
+    ): ProblemDetail {
+        val problem =
+            ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                ex.message ?: "Failed to compute game similarities",
+            )
+        problem.title = "Similarity Computation Error"
+        problem.type = URI.create("/problems/similarity-computation-error")
+        problem.setProperty("timestamp", Instant.now())
+        problem.setProperty("path", extractPath(request))
+        return problem
+    }
+
+    /**
+     * Handles invalid game data exceptions (e.g., missing description).
+     */
+    @ExceptionHandler(InvalidGameDataException::class)
+    fun handleInvalidGameDataException(
+        ex: InvalidGameDataException,
+        request: WebRequest,
+    ): ProblemDetail {
+        val problem =
+            ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                ex.message ?: "Game data is invalid or incomplete for similarity computation",
+            )
+        problem.title = "Invalid Game Data"
+        problem.type = URI.create("/problems/invalid-game-data")
+        problem.setProperty("timestamp", Instant.now())
+        problem.setProperty("path", extractPath(request))
+        return problem
+    }
+
+    /**
+     * Catches all other similarity-related exceptions.
+     */
+    @ExceptionHandler(SimilarityException::class)
+    fun handleSimilarityException(
+        ex: SimilarityException,
+        request: WebRequest,
+    ): ProblemDetail {
+        val problem =
+            ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                ex.message ?: "An error occurred during similarity processing",
+            )
+        problem.title = "Similarity Processing Error"
+        problem.type = URI.create("/problems/similarity-error")
+        problem.setProperty("timestamp", Instant.now())
+        problem.setProperty("path", extractPath(request))
+        return problem
+    }
+
     @ExceptionHandler(Exception::class)
     fun handleGenericException(
         ex: Exception,

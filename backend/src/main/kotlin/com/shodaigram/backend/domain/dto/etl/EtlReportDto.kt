@@ -9,7 +9,6 @@ data class EtlReport(
     val rawgSkipped: Int,
     val igdbInserted: Int,
     val igdbSkipped: Int,
-    val similaritiesInserted: Int,
     val gamesMerged: Int,
     val tagsNormalized: Int,
     val durationMs: Long,
@@ -24,7 +23,6 @@ data class EtlReport(
                     rawgSkipped = rawgSkipped,
                     igdbInserted = igdbInserted,
                     igdbSkipped = igdbSkipped,
-                    similaritiesInserted = similaritiesInserted,
                     gamesMerged = gamesMerged,
                     tagsNormalized = tagsNormalized,
                 ),
@@ -44,7 +42,6 @@ data class EtlSummaryDto(
     val rawgSkipped: Int,
     val igdbInserted: Int,
     val igdbSkipped: Int,
-    val similaritiesInserted: Int,
     val gamesMerged: Int,
     val tagsNormalized: Int,
 )
