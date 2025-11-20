@@ -11,6 +11,8 @@ data class SearchResultDto(
     val page: Int,
     val pageSize: Int,
     val totalPages: Int,
+    val isFirst: Boolean,
+    val isLast: Boolean,
 )
 
 /**

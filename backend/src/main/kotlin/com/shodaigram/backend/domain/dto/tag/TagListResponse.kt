@@ -5,8 +5,10 @@ package com.shodaigram.backend.domain.dto.tag
  */
 data class TagListResponse(
     val tags: List<TagSummaryDto>,
-    val totalTags: Long,
+    val totalResults: Long,
     val page: Int,
     val pageSize: Int,
     val totalPages: Int,
+    val isFirst: Boolean,
+    val isLast: Boolean,
 )

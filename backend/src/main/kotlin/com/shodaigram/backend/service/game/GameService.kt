@@ -68,7 +68,7 @@ class GameServiceImpl(
             games = page.content.map { GameSummaryDto.fromEntity(it) },
             page = page.number,
             pageSize = page.size,
-            totalElements = page.totalElements,
+            totalResults = page.totalElements,
             totalPages = page.totalPages,
             isFirst = page.isFirst,
             isLast = page.isLast,

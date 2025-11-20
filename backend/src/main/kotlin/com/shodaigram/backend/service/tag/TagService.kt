@@ -94,10 +94,12 @@ class TagServiceImpl(
 
         return TagListResponse(
             tags = paginatedTags,
-            totalTags = tags.size.toLong(),
+            totalResults = tags.size.toLong(),
             page = page,
             pageSize = size,
             totalPages = totalPages,
+            isFirst = page == 0,
+            isLast = page >= totalPages - 1,
         )
     }
 

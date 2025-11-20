@@ -68,3 +68,76 @@ enum class MatchReasonType {
     FRANCHISE_MATCH,
     DESCRIPTION_SIMILARITY,
 }
+
+/**
+ * Unified response wrapper for game recommendations.
+ * Supports both basic recommendations and recommendations with explainability.
+ */
+data class RecommendationResponse(
+    val recommendations: List<SimilarGameDto>,
+    val detailedRecommendations: List<SimilarGameWithReasonsDto>?,
+    val metadata: RecommendationMetadata,
+) {
+    companion object {
+        fun basic(
+            recommendations: List<SimilarGameDto>,
+            gameId: Long,
+            limit: Int,
+        ) = RecommendationResponse(
+            recommendations = recommendations,
+            detailedRecommendations = null,
+            metadata =
+                RecommendationMetadata(
+                    sourceGameId = gameId,
+                    algorithm = "TF-IDF",
+                    requestedLimit = limit,
+                    returnedCount = recommendations.size,
+                    explainability = false,
+                ),
+        )
+
+        fun detailed(
+            recommendations: List<SimilarGameWithReasonsDto>,
+            gameId: Long,
+            limit: Int,
+        ) = RecommendationResponse(
+            recommendations = recommendations.map { it.toBasicDto() },
+            detailedRecommendations = recommendations,
+            metadata =
+                RecommendationMetadata(
+                    sourceGameId = gameId,
+                    algorithm = "TF-IDF",
+                    requestedLimit = limit,
+                    returnedCount = recommendations.size,
+                    explainability = true,
+                ),
+        )
+    }
+}
+
+/**
+ * Metadata about the recommendation request and computation.
+ */
+data class RecommendationMetadata(
+    val sourceGameId: Long,
+    val algorithm: String,
+    val requestedLimit: Int,
+    val returnedCount: Int,
+    val explainability: Boolean,
+)
+
+/**
+ * Extension to convert detailed DTO to basic DTO
+ */
+private fun SimilarGameWithReasonsDto.toBasicDto() =
+    SimilarGameDto(
+        gameId = gameId,
+        name = name,
+        slug = slug,
+        rating = rating,
+        ratingCount = ratingCount,
+        releaseDate = releaseDate,
+        backgroundImageUrl = backgroundImageUrl,
+        similarityScore = similarityScore,
+        similarityType = similarityType,
+    )

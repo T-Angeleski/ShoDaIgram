@@ -30,9 +30,9 @@ class TagController(
                         DEVELOPER, PUBLISHER, KEYWORD
 
             Examples:
-            - `/api/games/tags` - All tags
-            - `/api/games/tags?category=GENRE` - Only genre tags
-            - `/api/games/tags?category=DEVELOPER&page=0&size=50` - Developers with pagination
+            - `/api/tags` - All tags
+            - `/api/tags?category=GENRE` - Only genre tags
+            - `/api/tags?category=DEVELOPER&page=0&size=50` - Developers with pagination
         """,
     )
     fun getAllTags(
@@ -70,9 +70,9 @@ class TagController(
             Tag lookup is case-insensitive and uses normalized names.
 
             Examples:
-            - `/api/games/tags/souls-like/games` - All Souls-like games
-            - `/api/games/tags/dark-fantasy/games?page=0&size=20` - Dark fantasy with pagination
-            - `/api/games/tags/rockstar-games/games` - Games by Rockstar Games
+            - `/api/tags/souls-like/games` - All Souls-like games
+            - `/api/tags/dark-fantasy/games?page=0&size=20` - Dark fantasy with pagination
+            - `/api/tags/rockstar-games/games` - Games by Rockstar Games
         """,
     )
     fun getGamesByTag(

@@ -1,5 +1,6 @@
 package com.shodaigram.backend.controller
 
+import com.shodaigram.backend.domain.dto.similarity.RecommendationResponse
 import com.shodaigram.backend.service.similarity.TfIdfSimilarityService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -27,6 +28,8 @@ class SimilarGamesController(
             - Shared genres, themes, franchises
             - Description similarity analysis
 
+            Response includes metadata about the algorithm and request parameters.
+
             Example: `/api/games/123/recommendations?limit=10&explainability=true`
         """,
     )
@@ -34,13 +37,15 @@ class SimilarGamesController(
         @Parameter(description = "Game ID") @PathVariable id: Long,
         @Parameter(description = "Maximum number of results") @RequestParam(defaultValue = "10") limit: Int,
         @Parameter(description = "Include match reasons") @RequestParam(defaultValue = "false") explainability: Boolean,
-    ): ResponseEntity<*> {
-        return if (explainability) {
-            val recommendations = tfIdfSimilarityService.getSimilarGamesWithReasons(id, limit)
-            ResponseEntity.ok(recommendations)
-        } else {
-            val recommendations = tfIdfSimilarityService.getSimilarGames(id, limit)
-            ResponseEntity.ok(recommendations)
-        }
+    ): ResponseEntity<RecommendationResponse> {
+        val response =
+            if (explainability) {
+                val recommendations = tfIdfSimilarityService.getSimilarGamesWithReasons(id, limit)
+                RecommendationResponse.detailed(recommendations, id, limit)
+            } else {
+                val recommendations = tfIdfSimilarityService.getSimilarGames(id, limit)
+                RecommendationResponse.basic(recommendations, id, limit)
+            }
+        return ResponseEntity.ok(response)
     }
 }

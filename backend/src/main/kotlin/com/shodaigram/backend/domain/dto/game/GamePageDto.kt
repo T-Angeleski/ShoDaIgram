@@ -7,7 +7,7 @@ data class GamePageDto(
     val games: List<GameSummaryDto>,
     val page: Int,
     val pageSize: Int,
-    val totalElements: Long,
+    val totalResults: Long,
     val totalPages: Int,
     val isFirst: Boolean,
     val isLast: Boolean,

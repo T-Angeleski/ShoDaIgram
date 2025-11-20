@@ -10,6 +10,8 @@ data class GameFilterResponse(
     val pageSize: Int,
     val totalResults: Long,
     val totalPages: Int,
+    val isFirst: Boolean,
+    val isLast: Boolean,
 )
 
 /**

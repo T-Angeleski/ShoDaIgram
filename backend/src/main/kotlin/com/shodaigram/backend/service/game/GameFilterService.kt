@@ -95,6 +95,8 @@ class GameFilterServiceImpl(
             pageSize = page.size,
             totalResults = page.totalElements,
             totalPages = page.totalPages,
+            isFirst = page.isFirst,
+            isLast = page.isLast,
         )
     }
 
@@ -136,6 +138,8 @@ class GameFilterServiceImpl(
             pageSize = pageable.pageSize,
             totalResults = games.size.toLong(),
             totalPages = totalPages,
+            isFirst = pageable.pageNumber == 0,
+            isLast = pageable.pageNumber >= totalPages - 1,
         )
     }
 

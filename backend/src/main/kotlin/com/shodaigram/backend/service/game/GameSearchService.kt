@@ -74,6 +74,8 @@ class GameSearchServiceImpl(
             page = page,
             pageSize = size,
             totalPages = totalPages,
+            isFirst = page == 0,
+            isLast = page >= totalPages - 1,
         )
     }
 
@@ -88,6 +90,8 @@ class GameSearchServiceImpl(
         page = page,
         pageSize = size,
         totalPages = 0,
+        isFirst = true,
+        isLast = true,
     )
 
     /**
