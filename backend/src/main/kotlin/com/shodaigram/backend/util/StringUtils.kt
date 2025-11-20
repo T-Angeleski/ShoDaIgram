@@ -1,5 +1,7 @@
 package com.shodaigram.backend.util
 
+import org.springframework.data.domain.Sort
+
 /**
  * String utilities for ETL operations - fuzzy matching, normalization, slug generation.
  */
@@ -61,42 +63,17 @@ object StringUtils {
     }
 
     /**
-     * Generates URL-safe slug from game name.
-     * If input already looks like a slug, returns normalized version.
-     *
-     * Examples:
-     * - "The Elder Scrolls VI" → "the-elder-scrolls-vi"
-     * - "Grand Theft Auto V" → "grand-theft-auto-v"
+     * Parses sort parameter into Spring Data Sort object.
      */
-    fun toSlug(input: String): String = normalize(input)
+    fun parseSortParam(sortParam: String): Sort {
+        val parts = sortParam.split(",")
+        val field = parts.getOrNull(0) ?: "rating"
+        val direction = parts.getOrNull(1)?.uppercase() ?: "DESC"
 
-    /**
-     * Fuzzy string matching using normalized Levenshtein distance.
-     *
-     * @param threshold Max edit distance to consider a match (default: 2)
-     * @return true if strings are similar within threshold
-     */
-    fun fuzzyMatch(
-        s1: String,
-        s2: String,
-        threshold: Int = 2,
-    ): Boolean {
-        val normalized1 = normalize(s1)
-        val normalized2 = normalize(s2)
-        return levenshteinDistance(normalized1, normalized2) <= threshold
-    }
-
-    /**
-     * Calculates similarity ratio (0.0 - 1.0) using Levenshtein distance.
-     * 1.0 = identical, 0.0 = completely different
-     */
-    fun similarityRatio(
-        s1: String,
-        s2: String,
-    ): Double {
-        val maxLen = maxOf(s1.length, s2.length)
-        if (maxLen == 0) return 1.0
-        val distance = levenshteinDistance(s1, s2)
-        return 1.0 - (distance.toDouble() / maxLen)
+        return if (direction == "ASC") {
+            Sort.by(Sort.Order.asc(field))
+        } else {
+            Sort.by(Sort.Order.desc(field))
+        }
     }
 }

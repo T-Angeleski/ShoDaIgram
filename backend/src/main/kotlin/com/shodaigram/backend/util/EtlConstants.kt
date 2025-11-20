@@ -48,4 +48,36 @@ object EtlConstants {
      * Score range: 0.0 (unrelated) to 1.0 (identical/clones).
      */
     val DEFAULT_SIMILARITY_SCORE = BigDecimal("0.8000")
+
+    /**
+     * Validation constants for filtering and data quality checks.
+     */
+    object ValidationConstants {
+        /**
+         * Minimum rating value (0-10 scale).
+         */
+        const val MIN_RATING = 0.0
+
+        /**
+         * Maximum rating value (0-10 scale).
+         */
+        const val MAX_RATING = 10.0
+
+        /**
+         * Minimum valid release year.
+         * 1970 chosen as earliest commercially viable video game era.
+         */
+        const val MIN_YEAR = 1970
+
+        /**
+         * Maximum valid release year.
+         * 2100 allows for announced future releases while preventing typos.
+         */
+        const val MAX_YEAR = 2100
+
+        /**
+         * Default page size limit for tag searches and autocomplete.
+         */
+        const val DEFAULT_TAG_LIMIT = 20
+    }
 }

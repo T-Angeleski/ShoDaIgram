@@ -2,12 +2,13 @@ package com.shodaigram.backend.repository
 
 import com.shodaigram.backend.domain.entity.Game
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 
 @Repository
-interface GameRepository : JpaRepository<Game, Long> {
+interface GameRepository : JpaRepository<Game, Long>, JpaSpecificationExecutor<Game> {
     @Query("SELECT g FROM Game g WHERE LOWER(g.slug) = LOWER(:slug)")
     fun findBySlugIgnoreCase(slug: String): Game?
 
@@ -116,4 +117,22 @@ interface GameRepository : JpaRepository<Game, Long> {
      */
     @Query("SELECT g FROM Game g WHERE LOWER(g.slug) = LOWER(:slug)")
     fun findBySlug(slug: String): Game?
+
+    /**
+     * Find games by multiple tags
+     */
+    @Query(
+        """
+        SELECT DISTINCT g FROM Game g
+        JOIN g.gameTags gt
+        JOIN gt.tag t
+        WHERE LOWER(t.normalizedName) IN :tagNormalizedNames
+        GROUP BY g.id
+        HAVING COUNT(DISTINCT t.id) = :tagCount
+        """,
+    )
+    fun findByAllTags(
+        tagNormalizedNames: List<String>,
+        tagCount: Long,
+    ): List<Game>
 }

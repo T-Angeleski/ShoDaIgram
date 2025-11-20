@@ -44,6 +44,16 @@ object SimilarityConstants {
     }
 
     /**
+     * Constants for date and time operations.
+     */
+    object DateConstants {
+        const val FIRST_MONTH = 1
+        const val LAST_MONTH = 12
+        const val FIRST_DAY = 1
+        const val LAST_DAY = 31
+    }
+
+    /**
      * Lucene document field names.
      */
     object LuceneFields {

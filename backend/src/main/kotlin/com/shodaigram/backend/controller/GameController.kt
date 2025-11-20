@@ -5,11 +5,11 @@ import com.shodaigram.backend.domain.dto.game.GamePageDto
 import com.shodaigram.backend.domain.dto.game.SearchResultDto
 import com.shodaigram.backend.service.game.GameSearchService
 import com.shodaigram.backend.service.game.GameService
+import com.shodaigram.backend.util.StringUtils
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -90,21 +90,9 @@ class GameController(
         @Parameter(description = "Results per page") @RequestParam(defaultValue = "20") size: Int,
         @Parameter(description = "Sort field and direction") @RequestParam(defaultValue = "rating,desc") sort: String,
     ): ResponseEntity<GamePageDto> {
-        val sortParams = parseSortParam(sort)
+        val sortParams = StringUtils.parseSortParam(sort)
         val pageable = PageRequest.of(page, size, sortParams)
         val games = gameService.getAllGames(pageable)
         return ResponseEntity.ok(games)
-    }
-
-    private fun parseSortParam(sortParam: String): Sort {
-        val parts = sortParam.split(",")
-        val field = parts.getOrNull(0) ?: "rating"
-        val direction = parts.getOrNull(1)?.uppercase() ?: "DESC"
-
-        return if (direction == "ASC") {
-            Sort.by(Sort.Order.asc(field))
-        } else {
-            Sort.by(Sort.Order.desc(field))
-        }
     }
 }

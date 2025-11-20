@@ -196,6 +196,46 @@ class GlobalExceptionHandler {
     }
 
     /**
+     * Handles invalid filter parameter exceptions.
+     */
+    @ExceptionHandler(InvalidFilterException::class)
+    fun handleInvalidFilterException(
+        ex: InvalidFilterException,
+        request: WebRequest,
+    ): ProblemDetail {
+        val problem =
+            ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                ex.message ?: "Invalid filter parameters",
+            )
+        problem.title = "Invalid Filter"
+        problem.type = URI.create("/problems/invalid-filter")
+        problem.setProperty("timestamp", Instant.now())
+        problem.setProperty("path", extractPath(request))
+        return problem
+    }
+
+    /**
+     * Handles tag not found exceptions.
+     */
+    @ExceptionHandler(TagNotFoundException::class)
+    fun handleTagNotFoundException(
+        ex: TagNotFoundException,
+        request: WebRequest,
+    ): ProblemDetail {
+        val problem =
+            ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND,
+                ex.message ?: "Tag not found",
+            )
+        problem.title = "Tag Not Found"
+        problem.type = URI.create("/problems/tag-not-found")
+        problem.setProperty("timestamp", Instant.now())
+        problem.setProperty("path", extractPath(request))
+        return problem
+    }
+
+    /**
      * Extract request URI from WebRequest description.
      * Format: "uri=/api/v1/games/123" → "/api/v1/games/123"
      */
