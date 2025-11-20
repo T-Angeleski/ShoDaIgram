@@ -2,12 +2,13 @@ package com.shodaigram.backend.repository
 
 import com.shodaigram.backend.domain.entity.Game
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 
 @Repository
-interface GameRepository : JpaRepository<Game, Long> {
+interface GameRepository : JpaRepository<Game, Long>, JpaSpecificationExecutor<Game> {
     @Query("SELECT g FROM Game g WHERE LOWER(g.slug) = LOWER(:slug)")
     fun findBySlugIgnoreCase(slug: String): Game?
 
@@ -24,13 +25,6 @@ interface GameRepository : JpaRepository<Game, Long> {
         "SELECT DISTINCT g FROM Game g LEFT JOIN FETCH g.gameTags gt LEFT JOIN FETCH gt.tag WHERE g.igdbId IS NOT NULL",
     )
     fun findAllIgdbGamesWithTags(): List<Game>
-
-    /**
-     * Batch lookup: Find all games by IGDB IDs.
-     * Used for resolving IGDB's similar_games references.
-     */
-    @Query("SELECT g FROM Game g WHERE g.igdbId IN :igdbIds")
-    fun findAllByIgdbIdIn(igdbIds: List<Long>): List<Game>
 
     /**
      * Merge RAWG game into IGDB game using pure SQL.
@@ -83,4 +77,62 @@ interface GameRepository : JpaRepository<Game, Long> {
         sourceGameId: Long,
         targetGameId: Long,
     )
+
+    /**
+     * Full-text search using PostgreSQL BM25-like ranking.
+     * Searches across game name (weight A) and description (weight B).
+     */
+    @Query(
+        value = """
+            SELECT g.*,
+                TS_RANK_CD(g.search_vector, PLAINTO_TSQUERY('english', :query)) AS rank
+            FROM games g
+            WHERE g.search_vector @@ PLAINTO_TSQUERY('english', :query)
+            ORDER BY rank DESC
+            LIMIT :limit OFFSET :offset
+        """,
+        nativeQuery = true,
+    )
+    fun searchGamesByQuery(
+        query: String,
+        limit: Int,
+        offset: Int,
+    ): List<Game>
+
+    /**
+     * Count total search results for pagination.
+     */
+    @Query(
+        value = """
+        SELECT COUNT(*)
+        FROM games g
+        WHERE g.search_vector @@ PLAINTO_TSQUERY('english', :query)
+    """,
+        nativeQuery = true,
+    )
+    fun countSearchResults(query: String): Long
+
+    /**
+     * Find game by slug for pretty URLs.
+     */
+    @Query("SELECT g FROM Game g WHERE LOWER(g.slug) = LOWER(:slug)")
+    fun findBySlug(slug: String): Game?
+
+    /**
+     * Find games by multiple tags
+     */
+    @Query(
+        """
+        SELECT DISTINCT g FROM Game g
+        JOIN g.gameTags gt
+        JOIN gt.tag t
+        WHERE LOWER(t.normalizedName) IN :tagNormalizedNames
+        GROUP BY g.id
+        HAVING COUNT(DISTINCT t.id) = :tagCount
+        """,
+    )
+    fun findByAllTags(
+        tagNormalizedNames: List<String>,
+        tagCount: Long,
+    ): List<Game>
 }

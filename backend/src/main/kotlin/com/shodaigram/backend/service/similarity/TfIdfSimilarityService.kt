@@ -1,10 +1,15 @@
 package com.shodaigram.backend.service.similarity
 
+import com.shodaigram.backend.domain.dto.similarity.MatchReason
+import com.shodaigram.backend.domain.dto.similarity.MatchReasonType
 import com.shodaigram.backend.domain.dto.similarity.SimilarGameDto
+import com.shodaigram.backend.domain.dto.similarity.SimilarGameWithReasonsDto
 import com.shodaigram.backend.domain.dto.similarity.SimilarityComputationResponse
 import com.shodaigram.backend.domain.entity.Game
 import com.shodaigram.backend.domain.entity.GameSimilarity
 import com.shodaigram.backend.domain.entity.SimilarityType
+import com.shodaigram.backend.domain.entity.Tag
+import com.shodaigram.backend.domain.entity.TagCategory
 import com.shodaigram.backend.exception.InvalidGameDataException
 import com.shodaigram.backend.exception.LuceneIndexException
 import com.shodaigram.backend.exception.SimilarityComputationException
@@ -14,6 +19,7 @@ import com.shodaigram.backend.repository.GameTagRepository
 import com.shodaigram.backend.util.LuceneIndexBuilder
 import com.shodaigram.backend.util.SimilarityConstants
 import com.shodaigram.backend.util.SimilarityConstants.BATCH_SIZE
+import com.shodaigram.backend.util.SimilarityConstants.ExplainabilityWeights
 import com.shodaigram.backend.util.SimilarityConstants.LOG_INTERVAL
 import com.shodaigram.backend.util.TfIdfCalculator
 import org.apache.lucene.analysis.standard.StandardAnalyzer
@@ -64,6 +70,18 @@ interface TfIdfSimilarityService {
         gameId: Long,
         limit: Int = 10,
     ): List<SimilarGameDto>
+
+    /**
+     * Retrieve similar games with explainability (match reasons).
+     *
+     * @param gameId The ID of the game to find similar games for.
+     * @param limit The maximum number of similar games to return.
+     * @return A list of SimilarGameWithReasonsDto with detailed match explanations.
+     */
+    fun getSimilarGamesWithReasons(
+        gameId: Long,
+        limit: Int = 10,
+    ): List<SimilarGameWithReasonsDto>
 }
 
 @Service
@@ -208,6 +226,89 @@ class TfIdfSimilarityServiceImpl(
         }
     }
 
+    @Transactional(readOnly = true)
+    override fun getSimilarGamesWithReasons(
+        gameId: Long,
+        limit: Int,
+    ): List<SimilarGameWithReasonsDto> {
+        val similarities = gameSimilarityRepository.findTopSimilarGames(gameId, limit)
+
+        return similarities.map { similarity ->
+            val similarGame = similarity.similarGame
+            val sharedTags = gameTagRepository.findSharedTags(gameId, similarGame.id!!)
+
+            val matchReasons = buildMatchReasons(sharedTags, similarity.similarityScore)
+
+            SimilarGameWithReasonsDto(
+                gameId = similarGame.id!!,
+                name = similarGame.name,
+                slug = similarGame.slug,
+                rating = similarGame.rating,
+                ratingCount = similarGame.ratingCount,
+                releaseDate = similarGame.releaseDate?.toString(),
+                backgroundImageUrl = similarGame.backgroundImageUrl,
+                similarityScore = similarity.similarityScore,
+                similarityType = SimilarityType.PRECOMPUTED_TF_IDF,
+                matchReasons = matchReasons,
+            )
+        }
+    }
+
+    private fun buildMatchReasons(
+        sharedTags: List<Tag>,
+        totalScore: BigDecimal,
+    ): List<MatchReason> {
+        val reasons = mutableListOf<MatchReason>()
+
+        val tagsByCategory = sharedTags.groupBy { it.category }
+
+        tagsByCategory[TagCategory.GENRE]?.let { genres ->
+            if (genres.isNotEmpty()) {
+                reasons.add(
+                    MatchReason(
+                        type = MatchReasonType.GENRE_MATCH,
+                        details = "Shared genres: ${genres.joinToString(", ") { it.name }}",
+                        contribution = ExplainabilityWeights.GENRE_CONTRIBUTION,
+                    ),
+                )
+            }
+        }
+
+        tagsByCategory[TagCategory.THEME]?.let { themes ->
+            if (themes.isNotEmpty()) {
+                reasons.add(
+                    MatchReason(
+                        type = MatchReasonType.THEME_MATCH,
+                        details = "Shared themes: ${themes.joinToString(", ") { it.name }}",
+                        contribution = ExplainabilityWeights.THEME_CONTRIBUTION,
+                    ),
+                )
+            }
+        }
+
+        tagsByCategory[TagCategory.FRANCHISE]?.let { franchises ->
+            if (franchises.isNotEmpty()) {
+                reasons.add(
+                    MatchReason(
+                        type = MatchReasonType.FRANCHISE_MATCH,
+                        details = "Part of franchise: ${franchises.joinToString(", ") { it.name }}",
+                        contribution = ExplainabilityWeights.FRANCHISE_CONTRIBUTION,
+                    ),
+                )
+            }
+        }
+
+        reasons.add(
+            MatchReason(
+                type = MatchReasonType.DESCRIPTION_SIMILARITY,
+                details = "Content similarity based on game descriptions and features",
+                contribution = totalScore.multiply(SimilarityConstants.ExplainabilityWeights.DESCRIPTION_FACTOR),
+            ),
+        )
+
+        return reasons
+    }
+
     private fun buildIndexAndExtractVectors(
         allGames: List<Game>,
     ): Pair<ByteBuffersDirectory, Map<Long, Map<String, Float>>> {
@@ -347,7 +448,7 @@ class TfIdfSimilarityServiceImpl(
         total: Int,
         similarities: Int,
     ) {
-        if (processed % SimilarityConstants.LOG_INTERVAL == 0) {
+        if (processed % LOG_INTERVAL == 0) {
             logger.info("Processed $processed/$total games ($similarities similarities computed)")
         }
     }

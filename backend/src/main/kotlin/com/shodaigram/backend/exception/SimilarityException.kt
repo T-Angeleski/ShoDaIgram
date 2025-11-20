@@ -27,3 +27,10 @@ class SimilarityComputationException(
 class InvalidGameDataException(
     message: String,
 ) : SimilarityException(message)
+
+/**
+ * Thrown when a requested game is not found in the database.
+ */
+class GameNotFoundException(
+    message: String,
+) : RuntimeException(message)
