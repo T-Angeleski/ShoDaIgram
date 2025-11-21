@@ -6,5 +6,5 @@ export const gameService = {
       params: { page: 0, size: 5 },
     });
     return response.data;
-  }
+  },
 };
