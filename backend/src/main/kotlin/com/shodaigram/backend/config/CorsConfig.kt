@@ -14,6 +14,10 @@ class CorsConfig : WebMvcConfigurer {
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("*")
             .allowCredentials(false)
-            .maxAge(3600)
+            .maxAge(CORS_MAX_AGE_SECONDS)
+    }
+
+    private companion object {
+        private const val CORS_MAX_AGE_SECONDS: Long = 3600L
     }
 }
