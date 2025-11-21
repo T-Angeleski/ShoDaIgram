@@ -109,7 +109,6 @@ Thumbs.db
 
 # Project specific - Data files
 *.csv
-*.json
 *.parquet
 *.db
 *.sqlite
@@ -118,6 +117,7 @@ data-engineering/data
 
 # Backend
 backend/.github/
+.github/copilot-instructions.md
 
 # Gradle
 .gradle/
@@ -151,6 +151,9 @@ logs/
 src/main/resources/data/raw/
 *.json
 !**/sample*.json
+!frontend/package.json
+!frontend/tsconfig*.json
+!frontend/**/package.json
 
 
 # Logs
