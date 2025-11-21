@@ -4,108 +4,68 @@
 
 Ever spend more time browsing game libraries than actually playing? This project aims to fix that by building a smart recommendation engine that actually understands what you like.
 
+## 🎯 Features
 
-## What's Working Right Now
+- **Similar Games Discovery**: Find games similar to your favorites using TF-IDF content-based recommendations
+- **Natural Language Search**: Search for games by describing what you want (e.g., "space shooter with crafting")
+- **Tag-Based Filtering**: Filter games by genres, themes, platforms, and more
+- **Explainable Recommendations**: See why games were recommended with match reason badges
 
-### ✅ Data Collection Pipeline (Python)
-Scraping comprehensive game information from RAWG and IGDB APIs:
-- Game metadata (titles, descriptions, release dates)
-- Genre and platform information
-- User ratings and review counts
-- Developer/publisher details
-- Similar game relationships
+## 🏗️ Architecture
 
-Already collected: **~10,000+ game records** as structured JSON files.
+### Backend
+- **Framework**: Spring Boot 3.5.6 (Kotlin)
+- **Database**: PostgreSQL with full-text search
+- **Algorithms**: TF-IDF (Apache Lucene), BM25 (PostgreSQL)
+- **Data**: ~7,500 games from IGDB and RAWG APIs
 
-### 🔨 Backend API (Kotlin + Spring Boot)
-Setting up the foundation:
-- PostgreSQL database schema design
-- REST API endpoints (in progress)
-- Data models and repository layer
+### Frontend
+- **Framework**: React 18 + TypeScript + Vite
+- **UI Library**: Material-UI (MUI) v5
+- **State Management**: TanStack Query (React Query)
+- **Styling**: Styled Components + MUI theming
 
-## Tech Stack
+### Data Engineering
+- **Language**: Python 3.12
+- **APIs**: IGDB, RAWG
+- **Processing**: ETL pipeline for game data ingestion
 
-**Data Pipeline:**
-- Python 3.12 with httpx for API calls
-- JSON for structured data storage
-- Automated rate limiting and error handling
+## 🚀 Getting Started
 
-**Backend:**
-- Kotlin 2.0.10
-- Spring Boot 3.5.6
-- PostgreSQL 16
-- Apache Lucene 9.10.0 (for search)
+### Prerequisites
+- Java 21
+- Node.js 20+
+- PostgreSQL 15+
+- Yarn
+- Python 3.12 (for data engineering)
 
-**Code Quality:**
-- Ktlint & Detekt for Kotlin
-- Black & Flake8 for Python
-- Pre-commit hooks
-
-## Project Structure
-
-```
-ShoDaIgram/
-├── data-engineering/     # 🐍 Python - Data collection scripts
-│   ├── src/             # Fetchers for RAWG/IGDB APIs
-│   ├── data/            # ~10k games in JSON format
-│   └── Makefile         # make fetch-all, make dev, etc.
-│
-└── backend/             # 🔧 Kotlin - API server (in development)
-    ├── src/main/kotlin  # Spring Boot application
-    └── build.gradle.kts # Gradle build config
-```
-
-## Getting Started
-
-### 1. Collect Game Data
-
-```bash
-cd data-engineering
-make setup              # Install dependencies
-make get-token          # Generate IGDB API token
-make fetch-all          # Start collecting games (takes ~5-10 min)
-make show-data          # See what you got
-```
-
-### 2. Run the Backend (WIP)
-
+### Backend Setup
 ```bash
 cd backend
 ./gradlew bootRun
 ```
 
-## What's Next?
+API runs on http://localhost:8080
 
-- [ ] **ETL Pipeline** - Transform raw JSON into normalized PostgreSQL tables
-- [ ] **Search API** - Lucene-powered game search endpoint
-- [ ] **Recommendation Engine** - Collaborative filtering based on genres/tags
-- [ ] **Frontend** - Simple web UI to test recommendations
+Frontend Setup
+```bash
+cd frontend
+yarn install
+yarn dev
+```
+App runs on http://localhost:5173
 
-## Why These APIs?
+Data Engineering
+```bash
+cd data-engineering
+uv sync
+make fetch  # Fetch game data from APIs
+```
 
-**RAWG.io** - Great for popular games, user ratings, and screenshots. Free tier is generous.
-
-**IGDB** - More detailed metadata like game modes, franchises, and age ratings. Requires Twitch developer account (also free).
-
-
-## Sample Data
-
-Here's what the pipeline collects for each game:
-
-```json
-{
-  "name": "The Witcher 3: Wild Hunt",
-  "slug": "the-witcher-3-wild-hunt",
-  "rating": 92.5,
-  "genres": ["Action", "RPG"],
-  "platforms": ["PC", "PlayStation 4", "Xbox One", "Nintendo Switch"],
-  "developers": ["CD PROJEKT RED"],
-  "publishers": ["CD PROJEKT RED"],
-  "themes": ["Fantasy", "Open World"],
-  "game_modes": ["Single player"],
-  "player_perspectives": ["Third person"],
-  "similar_games": ["The Elder Scrolls V: Skyrim", "Dragon Age: Inquisition"],
-  "first_release_date": "2015-05-19",
-  "data_source": "igdb"
-}
+📁 Project Structure
+```
+ShoDaIgram/
+├── backend/           # Spring Boot API
+├── frontend/          # React TypeScript app
+└── data-engineering/  # Python ETL scripts
 ```
