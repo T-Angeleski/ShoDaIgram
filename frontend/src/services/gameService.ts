@@ -13,6 +13,30 @@ import { apiClient } from "./api";
 
 export const gameService = {
   getGames: async (params: GameListParams = {}): Promise<GamePageDto> => {
+    if (params.tags && params.tags.length > 0) {
+      const filterResponse = await apiClient.get<GameFilterResponse>(
+        "/games/filter",
+        {
+          params: {
+            tags: params.tags.join(","),
+            page: params.page ?? 0,
+            size: params.size ?? 20,
+            sort: params.sort ?? "rating,desc",
+          },
+        },
+      );
+
+      return {
+        games: filterResponse.data.games,
+        page: filterResponse.data.page,
+        pageSize: filterResponse.data.pageSize,
+        totalResults: filterResponse.data.totalResults,
+        totalPages: filterResponse.data.totalPages,
+        isFirst: filterResponse.data.isFirst,
+        isLast: filterResponse.data.isLast,
+      };
+    }
+
     const response = await apiClient.get<GamePageDto>("/games", {
       params: {
         page: params.page ?? 0,

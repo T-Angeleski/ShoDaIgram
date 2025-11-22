@@ -36,6 +36,7 @@ export interface GameDetailDto {
 export interface TagDto {
   id: number;
   name: string;
+  normalizedName: string;
   category: TagCategory;
 }
 
