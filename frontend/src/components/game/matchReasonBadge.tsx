@@ -33,7 +33,7 @@ const MatchReasonBadge = ({ reason }: MatchReasonBadgeProps) => {
 
   return (
     <Tooltip title={reason.details} arrow>
-      <MatchBadge reasonType={reason.type}>
+      <MatchBadge $reasonType={reason.type}>
         {config.icon}
         <span>{config.label}</span>
         <span style={{ fontWeight: 600 }}>{scorePercent}%</span>

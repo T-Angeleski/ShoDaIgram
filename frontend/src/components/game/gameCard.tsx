@@ -2,7 +2,7 @@ import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, CardContent, Chip, Rating } from "@mui/material";
 
-import { GameSummaryDto } from "../../types/game.types";
+import { GameSearchDto, GameSummaryDto } from "../../types/game.types";
 import { SimilarGameWithReasonsDto } from "../../types/recommendation.types";
 
 import MatchReasonBadge from "./matchReasonBadge";
@@ -18,12 +18,12 @@ import {
 } from "./styled";
 
 interface GameCardProps {
-  game: GameSummaryDto | SimilarGameWithReasonsDto;
+  game: GameSummaryDto | SimilarGameWithReasonsDto | GameSearchDto;
   variant?: "default" | "similar";
 }
 
 const isSimilarGame = (
-  game: GameSummaryDto | SimilarGameWithReasonsDto,
+  game: GameSummaryDto | SimilarGameWithReasonsDto | GameSearchDto,
 ): game is SimilarGameWithReasonsDto => {
   return "similarityScore" in game;
 };
@@ -47,7 +47,7 @@ const GameCard = ({ game, variant = "default" }: GameCardProps) => {
   const { name, rating, releaseDate, backgroundImageUrl } = game;
 
   const handleClick = () => {
-    navigate(`/games/${gameId}/similar`);
+    navigate(`/games/${gameId}`);
   };
 
   const getRatingValue = (rating: number | null) => {
