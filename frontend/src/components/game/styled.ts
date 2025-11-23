@@ -106,7 +106,7 @@ export const MatchReasonsContainer = styled(Box)`
   margin-top: 8px;
 `;
 
-export const MatchBadge = styled(Box)<{ reasonType: string }>`
+export const MatchBadge = styled(Box)<{ $reasonType: string }>`
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -114,8 +114,8 @@ export const MatchBadge = styled(Box)<{ reasonType: string }>`
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 500;
-  background-color: ${({ reasonType }) => {
-    switch (reasonType) {
+  background-color: ${({ $reasonType }) => {
+    switch ($reasonType) {
       case "GENRE_MATCH":
         return "#3b82f6";
       case "THEME_MATCH":

@@ -5,7 +5,8 @@ import { ThemeProvider } from "styled-components";
 
 import AppLayout from "./components/layout/appLayout";
 import GameBrowserPage from "./pages/gameBrowserPage";
-import SimilarGamesPage from "./pages/similarGamesPage";
+import GameDetailPage from "./pages/gameDetailPage";
+import SearchPage from "./pages/searchPage";
 import { theme } from "./theme/theme";
 import { FIVE_MINUTES } from "./utils/appConstants";
 
@@ -34,7 +35,8 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/games" element={<GameBrowserPage />} />
-              <Route path="/games/:id/similar" element={<SimilarGamesPage />} />
+              <Route path="/games/:id" element={<GameDetailPage />} />
+              <Route path="/search" element={<SearchPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </AppLayout>

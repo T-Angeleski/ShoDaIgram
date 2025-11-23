@@ -1,14 +1,15 @@
 import { Skeleton } from "@mui/material";
 
-import { GameSummaryDto } from "../../types/game.types";
+import { GameSearchDto, GameSummaryDto } from "../../types/game.types";
 import { SimilarGameWithReasonsDto } from "../../types/recommendation.types";
 import EmptyState from "../common/emptyState";
 
 import GameCard from "./gameCard";
 import { GameCardContent, GameGridContainer, StyledGameCard } from "./styled";
 
+type GameType = GameSummaryDto | SimilarGameWithReasonsDto | GameSearchDto;
 interface GameGridProps {
-  games: (GameSummaryDto | SimilarGameWithReasonsDto)[];
+  games: GameType[];
   isLoading?: boolean;
   isEmpty?: boolean;
   variant?: "default" | "similar";
@@ -42,7 +43,7 @@ const GameGrid = ({
     return <EmptyState message="No games found" />;
   }
 
-  const getGameKey = (game: GameSummaryDto | SimilarGameWithReasonsDto) => {
+  const getGameKey = (game: GameType) => {
     return "gameId" in game ? game.gameId : game.id;
   };
 
