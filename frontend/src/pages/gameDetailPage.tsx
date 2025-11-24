@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { Button, Chip, Rating, Typography } from "@mui/material";
+import { Button, Chip, Fade, Rating, Typography } from "@mui/material";
 
 import ErrorDisplay from "../components/common/errorDisplay";
 import LoadingSpinner from "../components/common/loadingSpinner";
@@ -59,93 +59,98 @@ const GameDetailPage = () => {
 
   return (
     <PageContainer>
-      <BackButtonContainer>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)}>
-          Back
-        </Button>
-      </BackButtonContainer>
+      <Fade in={true} timeout={500}>
+        <div>
+          <BackButtonContainer>
+            <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)}>
+              Back
+            </Button>
+          </BackButtonContainer>
 
-      <HeroSection>
-        {game.backgroundImageUrl && (
-          <GameImage
-            src={game.backgroundImageUrl}
-            alt={`Cover art for ${game.name}`}
-          />
-        )}
-
-        <GameTitle>{game.name}</GameTitle>
-
-        <GameMetadata>
-          {game.rating && (
-            <RatingContainer>
-              <Rating value={game.rating / 2} readOnly precision={0.1} />
-              <Typography variant="body2" color="text.secondary">
-                {game.rating.toFixed(1)}/10
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                ({game.ratingCount.toLocaleString()} ratings)
-              </Typography>
-            </RatingContainer>
-          )}
-          {year && <Chip label={year} size="small" />}
-        </GameMetadata>
-      </HeroSection>
-
-      {game.description && (
-        <SectionContainer>
-          <SectionTitle>About</SectionTitle>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}
-          >
-            {game.description}
-          </Typography>
-        </SectionContainer>
-      )}
-
-      {game.tagsByCategory && Object.keys(game.tagsByCategory).length > 0 && (
-        <SectionContainer>
-          <SectionTitle>Tags</SectionTitle>
-          <TagsGrid>
-            {Object.entries(game.tagsByCategory)
-              .filter(([category]) => category !== "KEYWORD")
-              .map(([category, tags]) => (
-                <TagCategory key={category}>
-                  <TagCategoryTitle>{category}</TagCategoryTitle>
-                  <TagChipsContainer>
-                    {tags.map((tag) => (
-                      <Chip
-                        key={tag.id}
-                        label={tag.name}
-                        size="small"
-                        variant="outlined"
-                      />
-                    ))}
-                  </TagChipsContainer>
-                </TagCategory>
-              ))}
-          </TagsGrid>
-        </SectionContainer>
-      )}
-
-      {similarGames.length > 0 && (
-        <>
-          <Divider />
-          <SimilarGamesSection>
-            <GameTitle>Similar Games</GameTitle>
-            <SimilarGamesDescription>
-              Based on content analysis and gameplay similarity
-            </SimilarGamesDescription>
-
-            {similarLoading ? (
-              <LoadingSpinner message="Finding similar games..." />
-            ) : (
-              <GameGrid games={similarGames} variant="similar" />
+          <HeroSection>
+            {game.backgroundImageUrl && (
+              <GameImage
+                src={game.backgroundImageUrl}
+                alt={`Cover art for ${game.name}`}
+              />
             )}
-          </SimilarGamesSection>
-        </>
-      )}
+
+            <GameTitle>{game.name}</GameTitle>
+
+            <GameMetadata>
+              {game.rating && (
+                <RatingContainer>
+                  <Rating value={game.rating / 2} readOnly precision={0.1} />
+                  <Typography variant="body2" color="text.secondary">
+                    {game.rating.toFixed(1)}/10
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    ({game.ratingCount.toLocaleString()} ratings)
+                  </Typography>
+                </RatingContainer>
+              )}
+              {year && <Chip label={year} size="small" />}
+            </GameMetadata>
+          </HeroSection>
+
+          {game.description && (
+            <SectionContainer>
+              <SectionTitle>About</SectionTitle>
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}
+              >
+                {game.description}
+              </Typography>
+            </SectionContainer>
+          )}
+
+          {game.tagsByCategory &&
+            Object.keys(game.tagsByCategory).length > 0 && (
+              <SectionContainer>
+                <SectionTitle>Tags</SectionTitle>
+                <TagsGrid>
+                  {Object.entries(game.tagsByCategory)
+                    .filter(([category]) => category !== "KEYWORD")
+                    .map(([category, tags]) => (
+                      <TagCategory key={category}>
+                        <TagCategoryTitle>{category}</TagCategoryTitle>
+                        <TagChipsContainer>
+                          {tags.map((tag) => (
+                            <Chip
+                              key={tag.id}
+                              label={tag.name}
+                              size="small"
+                              variant="outlined"
+                            />
+                          ))}
+                        </TagChipsContainer>
+                      </TagCategory>
+                    ))}
+                </TagsGrid>
+              </SectionContainer>
+            )}
+
+          {similarGames.length > 0 && (
+            <>
+              <Divider />
+              <SimilarGamesSection>
+                <GameTitle>Similar Games</GameTitle>
+                <SimilarGamesDescription>
+                  Based on content analysis and gameplay similarity
+                </SimilarGamesDescription>
+
+                {similarLoading ? (
+                  <LoadingSpinner message="Finding similar games..." />
+                ) : (
+                  <GameGrid games={similarGames} variant="similar" />
+                )}
+              </SimilarGamesSection>
+            </>
+          )}
+        </div>
+      </Fade>
     </PageContainer>
   );
 };

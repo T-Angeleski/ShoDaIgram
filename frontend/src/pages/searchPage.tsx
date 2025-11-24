@@ -1,5 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
-import { Box, Chip, Typography } from "@mui/material";
+import {
+  Box,
+  Chip,
+  Fade,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  Typography,
+} from "@mui/material";
 
 import EmptyState from "../components/common/emptyState";
 import ErrorDisplay from "../components/common/errorDisplay";
@@ -28,11 +38,13 @@ const SearchPage = () => {
   const [page, setPage] = useState(0);
   const [animatedIndex, setAnimatedIndex] = useState(0);
   const [hasUserTyped, setHasUserTyped] = useState(false);
+  const [sortParam, setSortParam] = useState("relevance,desc");
 
   const { data, isLoading, error, refetch } = useSearchGames({
     query: searchQuery,
     page,
     size: 20,
+    sort: sortParam === "relevance,desc" ? undefined : sortParam,
   });
 
   const showResults = searchQuery.length >= 3;
@@ -59,96 +71,146 @@ const SearchPage = () => {
 
   const handleExampleClick = (example: string) => {
     setHasUserTyped(true);
-    setSearchQuery(example);
-    setPage(0);
+    handleSearch(example);
   };
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
 
+  const handleSortChange = (event: SelectChangeEvent) => {
+    setSortParam(event.target.value);
+    setPage(0);
+  };
+
   return (
     <PageContainer>
-      <SearchHeroSection>
-        <Typography variant="h3" component="h1" gutterBottom>
-          Search Games
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-          Describe the game you're looking for
-        </Typography>
-
-        <SearchContainer>
-          <SearchBar
-            onSearch={handleSearch}
-            onUserType={() => setHasUserTyped(true)}
-            autoFocus
-            placeholder={currentPlaceholder}
-          />
-        </SearchContainer>
-
-        {!showResults && (
-          <>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
-              Popular searches:
+      <Fade in={true} timeout={500}>
+        <div>
+          <SearchHeroSection>
+            <Typography variant="h3" component="h1" gutterBottom>
+              Search Games
             </Typography>
-            <ExampleQueriesContainer>
-              {EXAMPLE_QUERIES.map((example) => (
-                <Chip
-                  key={example}
-                  label={example}
-                  onClick={() => handleExampleClick(example)}
-                  clickable
-                  variant="outlined"
-                />
-              ))}
-            </ExampleQueriesContainer>
-          </>
-        )}
-      </SearchHeroSection>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              Describe the game you're looking for
+            </Typography>
 
-      {showResults && (
-        <>
-          {isLoading && <LoadingSpinner message="Searching..." />}
+            <SearchContainer>
+              <SearchBar
+                onSearch={handleSearch}
+                onUserType={() => setHasUserTyped(true)}
+                autoFocus
+                placeholder={currentPlaceholder}
+                initialValue={searchQuery}
+              />
+            </SearchContainer>
 
-          {error && <ErrorDisplay error={error} onRetry={refetch} />}
+            {!showResults && (
+              <>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mt: 3 }}
+                >
+                  Popular searches:
+                </Typography>
+                <ExampleQueriesContainer>
+                  {EXAMPLE_QUERIES.map((example) => (
+                    <Chip
+                      key={example}
+                      label={example}
+                      onClick={() => handleExampleClick(example)}
+                      clickable
+                      variant="outlined"
+                    />
+                  ))}
+                </ExampleQueriesContainer>
+              </>
+            )}
+          </SearchHeroSection>
 
-          {!isLoading && !error && !hasResults && (
-            <EmptyState
-              message={`No games found for "${searchQuery}"`}
-              actionLabel="Clear Search"
-              onAction={() => {
-                setSearchQuery("");
-                setHasUserTyped(false);
-              }}
-            />
-          )}
-
-          {!isLoading && !error && hasResults && (
+          {showResults && (
             <>
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="h5" gutterBottom>
-                  Search Results
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Found {data.totalResults.toLocaleString()} games matching "
-                  {searchQuery}"
-                </Typography>
-              </Box>
+              {isLoading && <LoadingSpinner message="Searching..." />}
 
-              <GameGrid games={data.games} />
+              {error && <ErrorDisplay error={error} onRetry={refetch} />}
 
-              {data.totalPages > 1 && (
-                <Pagination
-                  currentPage={page}
-                  totalPages={data.totalPages}
-                  onPageChange={handlePageChange}
-                  totalResults={data.totalResults}
+              {!isLoading && !error && !hasResults && (
+                <EmptyState
+                  message={`No games found for "${searchQuery}"`}
+                  actionLabel="Clear Search"
+                  onAction={() => {
+                    setSearchQuery("");
+                    setHasUserTyped(false);
+                  }}
                 />
+              )}
+
+              {!isLoading && !error && hasResults && (
+                <>
+                  <Box
+                    sx={{
+                      mb: 3,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      gap: 2,
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="h5" gutterBottom>
+                        Search Results
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Found {data.totalResults.toLocaleString()} games
+                        matching "{searchQuery}"
+                      </Typography>
+                    </Box>
+
+                    <FormControl size="small" sx={{ minWidth: 200 }}>
+                      <InputLabel id="search-sort-label">Sort By</InputLabel>
+                      <Select
+                        labelId="search-sort-label"
+                        id="search-sort"
+                        value={sortParam}
+                        label="Sort By"
+                        onChange={handleSortChange}
+                      >
+                        <MenuItem value="relevance,desc">Relevance</MenuItem>
+                        <MenuItem value="ratingCount,desc">
+                          Popularity (Most Ratings)
+                        </MenuItem>
+                        <MenuItem value="rating,desc">
+                          Rating (High to Low)
+                        </MenuItem>
+                        <MenuItem value="rating,asc">
+                          Rating (Low to High)
+                        </MenuItem>
+                        <MenuItem value="releaseDate,desc">
+                          Release Date (Newest)
+                        </MenuItem>
+                        <MenuItem value="name,asc">Name (A-Z)</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
+
+                  <GameGrid games={data.games} />
+
+                  {data.totalPages > 1 && (
+                    <Pagination
+                      currentPage={page}
+                      totalPages={data.totalPages}
+                      onPageChange={handlePageChange}
+                      totalResults={data.totalResults}
+                    />
+                  )}
+                </>
               )}
             </>
           )}
-        </>
-      )}
+        </div>
+      </Fade>
     </PageContainer>
   );
 };

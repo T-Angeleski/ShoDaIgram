@@ -67,7 +67,7 @@ const GameCard = ({ game, variant = "default" }: GameCardProps) => {
     <CardWrapper onClick={handleClick}>
       {variant === "similar" && isSimilarGame(game) && (
         <SimilarityBadge score={game.similarityScore}>
-          {Math.round(game.similarityScore * 100)}% Match
+          {Math.round(game.similarityScore * 100)}%
         </SimilarityBadge>
       )}
       {backgroundImageUrl ? (

@@ -14,6 +14,7 @@ interface SearchBarProps {
   onUserType?: () => void;
   placeholder?: string;
   autoFocus?: boolean;
+  initialValue?: string;
 }
 
 const SearchBar = ({
@@ -21,9 +22,14 @@ const SearchBar = ({
   onUserType,
   placeholder = "Search for games...",
   autoFocus = false,
+  initialValue = "",
 }: SearchBarProps) => {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialValue);
   const debouncedQuery = useDebounce(query, 300);
+
+  useEffect(() => {
+    setQuery(initialValue);
+  }, [initialValue]);
 
   useEffect(() => {
     onSearch(debouncedQuery);

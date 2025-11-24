@@ -63,6 +63,7 @@ export const gameService = {
         query: params.query,
         page: params.page ?? 0,
         size: params.size ?? 20,
+        sort: params.sort,
       },
     });
     return response.data;

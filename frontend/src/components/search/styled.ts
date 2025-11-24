@@ -9,13 +9,13 @@ export const SearchContainer = styled(Box)`
 
 export const SearchHeroSection = styled(Box)`
   text-align: center;
-  margin-bottom: 48px;
+  margin-bottom: ${({ theme }) => theme.spacing(6)};
 `;
 
 export const ExampleQueriesContainer = styled(Box)`
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: ${({ theme }) => theme.spacing(1.5)};
   justify-content: center;
-  margin-top: 16px;
+  margin-top: ${({ theme }) => theme.spacing(2)};
 `;

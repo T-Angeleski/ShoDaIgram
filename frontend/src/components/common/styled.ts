@@ -1,5 +1,14 @@
 import { Box } from "@mui/material";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
+
+const bounce = keyframes`
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+`;
 
 export const LoadingContainer = styled(Box)`
   display: flex;
@@ -27,6 +36,10 @@ export const EmptyStateContainer = styled(Box)`
   min-height: 300px;
   padding: ${({ theme }) => theme.spacing(4)};
   text-align: center;
+
+  & > svg {
+    animation: ${bounce} 2s ease-in-out infinite;
+  }
 `;
 
 export const PageContainerWrapper = styled(Box)`

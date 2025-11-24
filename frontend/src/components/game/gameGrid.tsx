@@ -19,10 +19,16 @@ const GameGridSkeleton = () => (
   <GameGridContainer>
     {Array.from({ length: 12 }).map((_, index) => (
       <StyledGameCard key={index * 2}>
-        <Skeleton variant="rectangular" width="100%" height={180} />
+        <Skeleton
+          variant="rectangular"
+          width="100%"
+          height={180}
+          animation="wave"
+          sx={{ bgcolor: "grey.200" }}
+        />
         <GameCardContent>
-          <Skeleton variant="text" width="80%" height={32} />
-          <Skeleton variant="text" width="60%" height={24} />
+          <Skeleton variant="text" width="80%" height={32} animation="wave" />
+          <Skeleton variant="text" width="60%" height={24} animation="wave" />
         </GameCardContent>
       </StyledGameCard>
     ))}
