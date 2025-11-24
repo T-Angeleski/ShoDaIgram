@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { Box, Button, Chip, Divider, Rating, Typography } from "@mui/material";
+import { Button, Chip, Rating, Typography } from "@mui/material";
 
 import ErrorDisplay from "../components/common/errorDisplay";
 import LoadingSpinner from "../components/common/loadingSpinner";
@@ -9,6 +9,22 @@ import GameGrid from "../components/game/gameGrid";
 import { BackButtonContainer, HeroSection } from "../components/game/styled";
 import { useGame } from "../hooks/queries/useGame";
 import { useSimilarGames } from "../hooks/queries/useSimilarGames";
+
+import {
+  Divider,
+  GameImage,
+  GameMetadata,
+  GameTitle,
+  RatingContainer,
+  SectionContainer,
+  SectionTitle,
+  SimilarGamesDescription,
+  SimilarGamesSection,
+  TagCategory,
+  TagCategoryTitle,
+  TagChipsContainer,
+  TagsGrid,
+} from "./styled";
 
 const GameDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -51,28 +67,17 @@ const GameDetailPage = () => {
 
       <HeroSection>
         {game.backgroundImageUrl && (
-          <Box
-            component="img"
+          <GameImage
             src={game.backgroundImageUrl}
             alt={`Cover art for ${game.name}`}
-            sx={{
-              width: "100%",
-              height: "500px",
-              objectFit: "cover",
-              objectPosition: "center 30%",
-              borderRadius: 2,
-              mb: 3,
-            }}
           />
         )}
 
-        <Typography variant="h3" component="h1" gutterBottom fontWeight={600}>
-          {game.name}
-        </Typography>
+        <GameTitle>{game.name}</GameTitle>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+        <GameMetadata>
           {game.rating && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <RatingContainer>
               <Rating value={game.rating / 2} readOnly precision={0.1} />
               <Typography variant="body2" color="text.secondary">
                 {game.rating.toFixed(1)}/10
@@ -80,17 +85,15 @@ const GameDetailPage = () => {
               <Typography variant="caption" color="text.secondary">
                 ({game.ratingCount.toLocaleString()} ratings)
               </Typography>
-            </Box>
+            </RatingContainer>
           )}
           {year && <Chip label={year} size="small" />}
-        </Box>
+        </GameMetadata>
       </HeroSection>
 
       {game.description && (
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            About
-          </Typography>
+        <SectionContainer>
+          <SectionTitle>About</SectionTitle>
           <Typography
             variant="body1"
             color="text.secondary"
@@ -98,37 +101,19 @@ const GameDetailPage = () => {
           >
             {game.description}
           </Typography>
-        </Box>
+        </SectionContainer>
       )}
 
       {game.tagsByCategory && Object.keys(game.tagsByCategory).length > 0 && (
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            Tags
-          </Typography>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                sm: "repeat(2, 1fr)",
-                md: "repeat(3, 1fr)",
-              },
-              gap: 2,
-            }}
-          >
+        <SectionContainer>
+          <SectionTitle>Tags</SectionTitle>
+          <TagsGrid>
             {Object.entries(game.tagsByCategory)
               .filter(([category]) => category !== "KEYWORD")
               .map(([category, tags]) => (
-                <Box key={category}>
-                  <Typography
-                    variant="subtitle2"
-                    color="text.secondary"
-                    sx={{ mb: 1, fontWeight: 600 }}
-                  >
-                    {category}
-                  </Typography>
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                <TagCategory key={category}>
+                  <TagCategoryTitle>{category}</TagCategoryTitle>
+                  <TagChipsContainer>
                     {tags.map((tag) => (
                       <Chip
                         key={tag.id}
@@ -137,30 +122,28 @@ const GameDetailPage = () => {
                         variant="outlined"
                       />
                     ))}
-                  </Box>
-                </Box>
+                  </TagChipsContainer>
+                </TagCategory>
               ))}
-          </Box>
-        </Box>
+          </TagsGrid>
+        </SectionContainer>
       )}
 
       {similarGames.length > 0 && (
         <>
-          <Divider sx={{ my: 6 }} />
-          <Box>
-            <Typography variant="h4" gutterBottom fontWeight={600}>
-              Similar Games
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          <Divider />
+          <SimilarGamesSection>
+            <GameTitle>Similar Games</GameTitle>
+            <SimilarGamesDescription>
               Based on content analysis and gameplay similarity
-            </Typography>
+            </SimilarGamesDescription>
 
             {similarLoading ? (
               <LoadingSpinner message="Finding similar games..." />
             ) : (
               <GameGrid games={similarGames} variant="similar" />
             )}
-          </Box>
+          </SimilarGamesSection>
         </>
       )}
     </PageContainer>

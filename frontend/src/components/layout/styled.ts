@@ -2,7 +2,8 @@ import { AppBar, Box } from "@mui/material";
 import styled from "styled-components";
 
 export const StyledAppBar = styled(AppBar)`
-  background-color: ${({ theme }) => theme.palette.primary.main};
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  background-color: transparent !important;
 `;
 
 export const HeaderContent = styled(Box)`
