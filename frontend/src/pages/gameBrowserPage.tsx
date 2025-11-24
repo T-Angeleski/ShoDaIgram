@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Box, Typography } from "@mui/material";
 
 import EmptyState from "../components/common/emptyState";
 import PageContainer from "../components/common/pageContainer";
@@ -9,6 +8,8 @@ import GameGrid from "../components/game/gameGrid";
 import TagFilter from "../components/game/tagFilter";
 import { useGames } from "../hooks/queries/useGames";
 import { useTags } from "../hooks/queries/useTags";
+
+import { PageDescription, PageHeader, PageTitle } from "./styled";
 
 const GameBrowserPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -65,15 +66,13 @@ const GameBrowserPage = () => {
 
   return (
     <PageContainer>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h3" component="h1" gutterBottom>
-          Browse Games
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
+      <PageHeader>
+        <PageTitle>Browse Games</PageTitle>
+        <PageDescription>
           Explore our collection of{" "}
           {data?.totalResults.toLocaleString() ?? "thousands of"} games
-        </Typography>
-      </Box>
+        </PageDescription>
+      </PageHeader>
 
       <TagFilter
         selectedTagIds={selectedTagIds}

@@ -6,6 +6,7 @@ import { ThemeProvider } from "styled-components";
 import AppLayout from "./components/layout/appLayout";
 import GameBrowserPage from "./pages/gameBrowserPage";
 import GameDetailPage from "./pages/gameDetailPage";
+import HomePage from "./pages/homePage";
 import SearchPage from "./pages/searchPage";
 import { theme } from "./theme/theme";
 import { FIVE_MINUTES } from "./utils/appConstants";
@@ -19,11 +20,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-// Placeholder pages
-const HomePage = () => (
-  <div style={{ padding: "24px" }}>Home Page - Coming soon...</div>
-);
 
 function App() {
   return (
