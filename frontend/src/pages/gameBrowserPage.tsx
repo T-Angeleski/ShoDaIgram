@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Fade,
@@ -16,16 +16,29 @@ import GameGrid from "../components/game/gameGrid";
 import TagFilter from "../components/game/tagFilter";
 import { useGames } from "../hooks/queries/useGames";
 import { useTags } from "../hooks/queries/useTags";
+import { useToast } from "../hooks/useToast";
 
-import { PageDescription, PageHeader, PageTitle } from "./styled";
+import {
+  FilterFormControl,
+  PageDescription,
+  PageHeader,
+  PageTitle,
+} from "./styled";
 
 const GameBrowserPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { data: tagsResponse } = useTags();
+  const { data: tagsResponse, error: tagsError } = useTags();
+  const { showWarning, ToastComponent } = useToast();
 
   const page = Number.parseInt(searchParams.get("page") ?? "0");
   const tagParams = searchParams.get("tags");
   const sortParam = searchParams.get("sort") ?? "ratingCount,desc";
+
+  useEffect(() => {
+    if (tagsError) {
+      showWarning("Tag filters unavailable. Browse games without filters.");
+    }
+  }, [tagsError, showWarning]);
 
   const selectedTagNames = useMemo(
     () => (tagParams ? tagParams.split(",") : []),
@@ -67,6 +80,7 @@ const GameBrowserPage = () => {
     const newParams = new URLSearchParams(searchParams);
     newParams.set("page", newPage.toString());
     setSearchParams(newParams);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSortChange = (event: SelectChangeEvent) => {
@@ -92,38 +106,41 @@ const GameBrowserPage = () => {
             </PageDescription>
           </PageHeader>
 
-          <FormControl
-            size="small"
-            sx={{ minWidth: 200, marginBottom: (theme) => theme.spacing(2) }}
-          >
-            <InputLabel id="sort-select-label">Sort By</InputLabel>
-            <Select
-              labelId="sort-select-label"
-              id="sort-select"
-              value={sortParam}
-              label="Sort By"
-              onChange={handleSortChange}
-              disabled={isLoading}
-            >
-              <MenuItem value="ratingCount,desc">
-                Popularity (Most Ratings)
-              </MenuItem>
-              <MenuItem value="rating,desc">Rating (High to Low)</MenuItem>
-              <MenuItem value="rating,asc">Rating (Low to High)</MenuItem>
-              <MenuItem value="releaseDate,desc">
-                Release Date (Newest)
-              </MenuItem>
-              <MenuItem value="releaseDate,asc">Release Date (Oldest)</MenuItem>
-              <MenuItem value="name,asc">Name (A-Z)</MenuItem>
-              <MenuItem value="name,desc">Name (Z-A)</MenuItem>
-            </Select>
-          </FormControl>
+          <FilterFormControl>
+            <FormControl size="small" fullWidth>
+              <InputLabel id="sort-select-label">Sort By</InputLabel>
+              <Select
+                labelId="sort-select-label"
+                id="sort-select"
+                value={sortParam}
+                label="Sort By"
+                onChange={handleSortChange}
+                disabled={isLoading}
+              >
+                <MenuItem value="ratingCount,desc">
+                  Popularity (Most Ratings)
+                </MenuItem>
+                <MenuItem value="rating,desc">Rating (High to Low)</MenuItem>
+                <MenuItem value="rating,asc">Rating (Low to High)</MenuItem>
+                <MenuItem value="releaseDate,desc">
+                  Release Date (Newest)
+                </MenuItem>
+                <MenuItem value="releaseDate,asc">
+                  Release Date (Oldest)
+                </MenuItem>
+                <MenuItem value="name,asc">Name (A-Z)</MenuItem>
+                <MenuItem value="name,desc">Name (Z-A)</MenuItem>
+              </Select>
+            </FormControl>
+          </FilterFormControl>
 
-          <TagFilter
-            selectedTagIds={selectedTagIds}
-            onTagsChange={handleTagsChange}
-            disabled={isLoading}
-          />
+          {tagsResponse && (
+            <TagFilter
+              selectedTagIds={selectedTagIds}
+              onTagsChange={handleTagsChange}
+              disabled={isLoading}
+            />
+          )}
 
           {!isLoading &&
           data?.games.length === 0 &&
@@ -151,6 +168,7 @@ const GameBrowserPage = () => {
           )}
         </div>
       </Fade>
+      {ToastComponent}
     </PageContainer>
   );
 };

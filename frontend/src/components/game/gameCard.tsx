@@ -4,11 +4,13 @@ import { Box, CardContent, Chip, Rating } from "@mui/material";
 
 import { GameSearchDto, GameSummaryDto } from "../../types/game.types";
 import { SimilarGameWithReasonsDto } from "../../types/recommendation.types";
+import HighlightedText from "../common/highlightedText";
 
 import MatchReasonBadge from "./matchReasonBadge";
 import {
   GameCardContent,
   GameCardImage,
+  GameDescription,
   GameMetadata,
   GameTitle,
   MatchReasonsContainer,
@@ -17,15 +19,22 @@ import {
   StyledGameCard,
 } from "./styled";
 
+type GameCardData = GameSummaryDto | SimilarGameWithReasonsDto | GameSearchDto;
+
 interface GameCardProps {
-  game: GameSummaryDto | SimilarGameWithReasonsDto | GameSearchDto;
+  game: GameCardData;
   variant?: "default" | "similar";
+  searchQuery?: string;
 }
 
 const isSimilarGame = (
-  game: GameSummaryDto | SimilarGameWithReasonsDto | GameSearchDto,
+  game: GameCardData,
 ): game is SimilarGameWithReasonsDto => {
   return "similarityScore" in game;
+};
+
+const isGameSearch = (game: GameCardData): game is GameSearchDto => {
+  return "description" in game;
 };
 
 const getGradientColors = (id: number): [string, string] => {
@@ -40,7 +49,11 @@ const getGradientColors = (id: number): [string, string] => {
   return colors[id % colors.length] ?? ["#64748b", "#475569"];
 };
 
-const GameCard = ({ game, variant = "default" }: GameCardProps) => {
+const GameCard = ({
+  game,
+  variant = "default",
+  searchQuery,
+}: GameCardProps) => {
   const navigate = useNavigate();
 
   const gameId = isSimilarGame(game) ? game.gameId : game.id;
@@ -137,6 +150,15 @@ const GameCard = ({ game, variant = "default" }: GameCardProps) => {
               <Chip label={getYear(releaseDate)} size="small" />
             )}
           </GameMetadata>
+          {isGameSearch(game) && game.description && (
+            <GameDescription>
+              {searchQuery ? (
+                <HighlightedText text={game.description} query={searchQuery} />
+              ) : (
+                game.description
+              )}
+            </GameDescription>
+          )}
         </GameCardContent>
       )}
     </CardWrapper>

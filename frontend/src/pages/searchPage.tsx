@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  Box,
   Chip,
   Fade,
   FormControl,
@@ -11,7 +10,6 @@ import {
   Typography,
 } from "@mui/material";
 
-import EmptyState from "../components/common/emptyState";
 import ErrorDisplay from "../components/common/errorDisplay";
 import LoadingSpinner from "../components/common/loadingSpinner";
 import PageContainer from "../components/common/pageContainer";
@@ -19,11 +17,19 @@ import Pagination from "../components/common/pagination";
 import GameGrid from "../components/game/gameGrid";
 import SearchBar from "../components/search/searchBar";
 import {
+  ClearLink,
+  EmptyStateActions,
+  EmptyStateContainer,
+  EmptyStateDescription,
   ExampleQueriesContainer,
+  HeroDescription,
   SearchContainer,
+  SearchHeaderContainer,
   SearchHeroSection,
+  SearchResultsHeader,
 } from "../components/search/styled";
 import { useSearchGames } from "../hooks/queries/useSearchGames";
+import { useRecentSearches } from "../hooks/useRecentSearches";
 
 const EXAMPLE_QUERIES = [
   "open world RPG",
@@ -33,12 +39,24 @@ const EXAMPLE_QUERIES = [
   "turn-based strategy",
 ];
 
+const SEARCH_SUGGESTIONS = [
+  "shooter",
+  "rpg",
+  "strategy",
+  "open world",
+  "puzzle",
+  "multiplayer",
+  "adventure",
+  "action",
+];
+
 const SearchPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
   const [animatedIndex, setAnimatedIndex] = useState(0);
   const [hasUserTyped, setHasUserTyped] = useState(false);
   const [sortParam, setSortParam] = useState("relevance,desc");
+  const { recentSearches, addSearch, clearSearches } = useRecentSearches();
 
   const { data, isLoading, error, refetch } = useSearchGames({
     query: searchQuery,
@@ -64,10 +82,16 @@ const SearchPage = () => {
     ? "Search for games..."
     : `Try: ${EXAMPLE_QUERIES[animatedIndex]}`;
 
-  const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-    setPage(0);
-  }, []);
+  const handleSearch = useCallback(
+    (query: string) => {
+      setSearchQuery(query);
+      setPage(0);
+      if (query.trim().length >= 3) {
+        addSearch(query);
+      }
+    },
+    [addSearch],
+  );
 
   const handleExampleClick = (example: string) => {
     setHasUserTyped(true);
@@ -91,9 +115,9 @@ const SearchPage = () => {
             <Typography variant="h3" component="h1" gutterBottom>
               Search Games
             </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            <HeroDescription variant="body1" color="text.secondary">
               Describe the game you're looking for
-            </Typography>
+            </HeroDescription>
 
             <SearchContainer>
               <SearchBar
@@ -107,21 +131,48 @@ const SearchPage = () => {
 
             {!showResults && (
               <>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mt: 3 }}
-                >
-                  Popular searches:
-                </Typography>
+                <SearchHeaderContainer>
+                  <Typography variant="body2" color="text.secondary">
+                    {recentSearches.length > 0
+                      ? "Recent & popular searches:"
+                      : "Popular searches:"}
+                  </Typography>
+                  {recentSearches.length > 0 && (
+                    <ClearLink
+                      variant="caption"
+                      color="primary"
+                      onClick={clearSearches}
+                    >
+                      Clear recent
+                    </ClearLink>
+                  )}
+                </SearchHeaderContainer>
                 <ExampleQueriesContainer>
-                  {EXAMPLE_QUERIES.map((example) => (
+                  {recentSearches.map((search) => (
                     <Chip
-                      key={example}
+                      key={`recent-${search}`}
+                      label={search}
+                      onClick={() => handleExampleClick(search)}
+                      clickable
+                      variant="filled"
+                      color="primary"
+                      size="small"
+                    />
+                  ))}
+                  {EXAMPLE_QUERIES.filter(
+                    (example) =>
+                      !recentSearches.some(
+                        (recent) =>
+                          recent.toLowerCase() === example.toLowerCase(),
+                      ),
+                  ).map((example) => (
+                    <Chip
+                      key={`popular-${example}`}
                       label={example}
                       onClick={() => handleExampleClick(example)}
                       clickable
                       variant="outlined"
+                      size="small"
                     />
                   ))}
                 </ExampleQueriesContainer>
@@ -136,29 +187,43 @@ const SearchPage = () => {
               {error && <ErrorDisplay error={error} onRetry={refetch} />}
 
               {!isLoading && !error && !hasResults && (
-                <EmptyState
-                  message={`No games found for "${searchQuery}"`}
-                  actionLabel="Clear Search"
-                  onAction={() => {
-                    setSearchQuery("");
-                    setHasUserTyped(false);
-                  }}
-                />
+                <EmptyStateContainer>
+                  <Typography variant="h5" gutterBottom>
+                    No games found for "{searchQuery}"
+                  </Typography>
+                  <EmptyStateDescription variant="body2" color="text.secondary">
+                    Try different keywords or explore these suggestions:
+                  </EmptyStateDescription>
+                  <ExampleQueriesContainer>
+                    {SEARCH_SUGGESTIONS.map((suggestion) => (
+                      <Chip
+                        key={suggestion}
+                        label={suggestion}
+                        onClick={() => handleExampleClick(suggestion)}
+                        clickable
+                        variant="outlined"
+                        color="primary"
+                      />
+                    ))}
+                  </ExampleQueriesContainer>
+                  <EmptyStateActions>
+                    <Chip
+                      label="Clear Search"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setHasUserTyped(false);
+                      }}
+                      clickable
+                      variant="filled"
+                    />
+                  </EmptyStateActions>
+                </EmptyStateContainer>
               )}
 
               {!isLoading && !error && hasResults && (
                 <>
-                  <Box
-                    sx={{
-                      mb: 3,
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      flexWrap: "wrap",
-                      gap: 2,
-                    }}
-                  >
-                    <Box>
+                  <SearchResultsHeader>
+                    <div>
                       <Typography variant="h5" gutterBottom>
                         Search Results
                       </Typography>
@@ -166,7 +231,7 @@ const SearchPage = () => {
                         Found {data.totalResults.toLocaleString()} games
                         matching "{searchQuery}"
                       </Typography>
-                    </Box>
+                    </div>
 
                     <FormControl size="small" sx={{ minWidth: 200 }}>
                       <InputLabel id="search-sort-label">Sort By</InputLabel>
@@ -193,9 +258,9 @@ const SearchPage = () => {
                         <MenuItem value="name,asc">Name (A-Z)</MenuItem>
                       </Select>
                     </FormControl>
-                  </Box>
+                  </SearchResultsHeader>
 
-                  <GameGrid games={data.games} />
+                  <GameGrid games={data.games} searchQuery={searchQuery} />
 
                   {data.totalPages > 1 && (
                     <Pagination

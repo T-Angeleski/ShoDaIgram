@@ -13,6 +13,7 @@ interface GameGridProps {
   isLoading?: boolean;
   isEmpty?: boolean;
   variant?: "default" | "similar";
+  searchQuery?: string;
 }
 
 const GameGridSkeleton = () => (
@@ -40,6 +41,7 @@ const GameGrid = ({
   isLoading = false,
   isEmpty = false,
   variant = "default",
+  searchQuery,
 }: GameGridProps) => {
   if (isLoading) {
     return <GameGridSkeleton />;
@@ -56,7 +58,12 @@ const GameGrid = ({
   return (
     <GameGridContainer>
       {games.map((game) => (
-        <GameCard key={getGameKey(game)} game={game} variant={variant} />
+        <GameCard
+          key={getGameKey(game)}
+          game={game}
+          variant={variant}
+          searchQuery={searchQuery}
+        />
       ))}
     </GameGridContainer>
   );

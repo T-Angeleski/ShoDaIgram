@@ -1,4 +1,4 @@
-import { Box, Card, Typography } from "@mui/material";
+import { Alert, Box, Card, Typography } from "@mui/material";
 import styled from "styled-components";
 
 import { BRAND_COLORS, UI_COLORS } from "../utils/colors";
@@ -140,6 +140,11 @@ export const PageDescription = styled(Typography)`
   color: ${UI_COLORS.TEXT_SECONDARY};
 `;
 
+export const FilterFormControl = styled(Box)`
+  min-width: 200px;
+  margin-bottom: ${({ theme }) => theme.spacing(2)};
+`;
+
 // Game Detail Page Styles
 export const BackButton = styled(Box)`
   margin-bottom: ${({ theme }) => theme.spacing(3)};
@@ -192,6 +197,11 @@ export const SectionTitle = styled(Typography)`
   margin-bottom: ${({ theme }) => theme.spacing(2)};
 `;
 
+export const GameDescriptionText = styled(Typography)`
+  white-space: pre-wrap;
+  line-height: 1.7;
+`;
+
 export const TagsGrid = styled(Box)`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -228,6 +238,11 @@ export const Divider = styled(Box)`
   height: 1px;
   background-color: ${UI_COLORS.DIVIDER};
   margin: ${({ theme }) => theme.spacing(6)} 0;
+`;
+
+export const InlineErrorAlert = styled(Alert)`
+  margin: ${({ theme }) => theme.spacing(2)} 0;
+  max-width: 800px;
 `;
 
 export const SimilarGamesSection = styled(Box)`

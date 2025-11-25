@@ -40,6 +40,30 @@ export const GameCardContent = styled(Box)`
   gap: ${({ theme }) => theme.spacing(1)};
 `;
 
+export const GameDescription = styled(Box)`
+  font-size: 0.875rem;
+  color: ${({ theme }) => theme.palette.text.secondary};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.5;
+  max-height: 0;
+  opacity: 0;
+  transition:
+    max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 0;
+
+  ${StyledGameCard}:hover & {
+    max-height: 3em;
+    opacity: 1;
+    margin-top: ${({ theme }) => theme.spacing(1)};
+  }
+`;
+
 export const GameTitle = styled(Box)`
   font-size: 1.125rem;
   font-weight: 600;

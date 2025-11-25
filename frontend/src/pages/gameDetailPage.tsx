@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Button, Chip, Fade, Rating, Typography } from "@mui/material";
@@ -9,9 +10,11 @@ import GameGrid from "../components/game/gameGrid";
 import { BackButtonContainer, HeroSection } from "../components/game/styled";
 import { useGame } from "../hooks/queries/useGame";
 import { useSimilarGames } from "../hooks/queries/useSimilarGames";
+import { useToast } from "../hooks/useToast";
 
 import {
   Divider,
+  GameDescriptionText,
   GameImage,
   GameMetadata,
   GameTitle,
@@ -30,6 +33,7 @@ const GameDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const gameId = id ? Number.parseInt(id) : undefined;
+  const { showError, ToastComponent } = useToast();
 
   const {
     data: game,
@@ -38,8 +42,18 @@ const GameDetailPage = () => {
     refetch: refetchGame,
   } = useGame(gameId);
 
-  const { data: recommendationsData, isLoading: similarLoading } =
-    useSimilarGames(gameId, 12, true);
+  const {
+    data: recommendationsData,
+    isLoading: similarLoading,
+    error: similarError,
+    refetch: refetchSimilar,
+  } = useSimilarGames(gameId, 12, true);
+
+  useEffect(() => {
+    if (similarError) {
+      showError("Failed to load similar games. The page is still functional.");
+    }
+  }, [similarError, showError]);
 
   if (gameLoading) {
     return <LoadingSpinner message="Loading game details..." />;
@@ -96,13 +110,9 @@ const GameDetailPage = () => {
           {game.description && (
             <SectionContainer>
               <SectionTitle>About</SectionTitle>
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                sx={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}
-              >
+              <GameDescriptionText variant="body1" color="text.secondary">
                 {game.description}
-              </Typography>
+              </GameDescriptionText>
             </SectionContainer>
           )}
 
@@ -149,8 +159,19 @@ const GameDetailPage = () => {
               </SimilarGamesSection>
             </>
           )}
+
+          {similarError && (
+            <>
+              <Divider />
+              <SimilarGamesSection>
+                <GameTitle>Similar Games</GameTitle>
+                <ErrorDisplay error={similarError} onRetry={refetchSimilar} />
+              </SimilarGamesSection>
+            </>
+          )}
         </div>
       </Fade>
+      {ToastComponent}
     </PageContainer>
   );
 };
