@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.io.IOException
 import java.math.BigDecimal
 import java.math.RoundingMode
+import kotlin.math.pow
 
 /**
  * Service for computing TF-IDF based similarities between games.
@@ -379,7 +380,8 @@ class TfIdfSimilarityServiceImpl(
                     .mapNotNull { targetGame ->
                         val targetVector = gameVectors[targetGame.id!!] ?: return@mapNotNull null
 
-                        val similarity = TfIdfCalculator.calculateCosineSimilarity(sourceVector, targetVector)
+                        val rawSimilarity = TfIdfCalculator.calculateCosineSimilarity(sourceVector, targetVector)
+                        val similarity = rawSimilarity.pow(SimilarityConstants.SIMILARITY_POWER_FACTOR)
 
                         if (similarity >= SimilarityConstants.MIN_SIMILARITY_THRESHOLD) {
                             Pair(targetGame, similarity)

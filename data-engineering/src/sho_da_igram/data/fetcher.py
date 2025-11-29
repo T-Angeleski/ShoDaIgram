@@ -15,7 +15,7 @@ class RAWGDataFetcher:
     """Fetches game data from RAWG and parses to JSON"""
 
     DEFAULT_PAGE_SIZE = 40
-    DEFAULT_ORDERING = "-rating"
+    DEFAULT_ORDERING = "-added"
 
     def __init__(self, config: Config):
         if not config.rawg_api_key:
@@ -68,7 +68,15 @@ class RAWGDataFetcher:
 
             for game in games:
                 try:
-                    processed = RAWGDataHandler.process_game_data(game)
+                    # Fetch detailed game info to get description_raw
+                    game_id = game.get("id")
+                    if game_id:
+                        logger.debug(f"Fetching detailed info for game {game_id}")
+                        detailed_game = self.client.get_game_details(game_id)
+                        processed = RAWGDataHandler.process_game_data(detailed_game)
+                    else:
+                        processed = RAWGDataHandler.process_game_data(game)
+
                     all_games.append(processed)
                     fetched += 1
                     if fetched >= limit:

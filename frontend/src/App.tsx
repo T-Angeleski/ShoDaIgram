@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { CssBaseline } from "@mui/material";
+import { CssBaseline, ThemeProvider as MuiThemeProvider } from "@mui/material";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "styled-components";
 
@@ -24,20 +24,22 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <BrowserRouter>
-          <AppLayout>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/games" element={<GameBrowserPage />} />
-              <Route path="/games/:id" element={<GameDetailPage />} />
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </AppLayout>
-        </BrowserRouter>
-      </ThemeProvider>
+      <MuiThemeProvider theme={theme}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <BrowserRouter>
+            <AppLayout>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/games" element={<GameBrowserPage />} />
+                <Route path="/games/:id" element={<GameDetailPage />} />
+                <Route path="/search" element={<SearchPage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </AppLayout>
+          </BrowserRouter>
+        </ThemeProvider>
+      </MuiThemeProvider>
     </QueryClientProvider>
   );
 }

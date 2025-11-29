@@ -1,51 +1,37 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent } from "react";
 import { Clear as ClearIcon, Search as SearchIcon } from "@mui/icons-material";
-import {
-  CircularProgress,
-  IconButton,
-  InputAdornment,
-  TextField,
-} from "@mui/material";
-
-import { useDebounce } from "../../hooks/utils/useDebounce";
+import { IconButton, InputAdornment, TextField } from "@mui/material";
 
 interface SearchBarProps {
-  onSearch: (query: string) => void;
+  value: string;
+  onChange: (value: string) => void;
   onUserType?: () => void;
   placeholder?: string;
   autoFocus?: boolean;
 }
 
 const SearchBar = ({
-  onSearch,
+  value,
+  onChange,
   onUserType,
   placeholder = "Search for games...",
   autoFocus = false,
 }: SearchBarProps) => {
-  const [query, setQuery] = useState("");
-  const debouncedQuery = useDebounce(query, 300);
-
-  useEffect(() => {
-    onSearch(debouncedQuery);
-  }, [debouncedQuery, onSearch]);
-
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
+    onChange(e.target.value);
     if (e.target.value.length > 0) {
       onUserType?.();
     }
   };
 
   const handleClear = () => {
-    setQuery("");
+    onChange("");
   };
-
-  const isSearching = query.length > 0 && query !== debouncedQuery;
 
   return (
     <TextField
       fullWidth
-      value={query}
+      value={value}
       onChange={handleChange}
       placeholder={placeholder}
       autoFocus={autoFocus}
@@ -56,19 +42,15 @@ const SearchBar = ({
               <SearchIcon color="action" />
             </InputAdornment>
           ),
-          endAdornment: query.length > 0 && (
+          endAdornment: value.length > 0 && (
             <InputAdornment position="end">
-              {isSearching ? (
-                <CircularProgress size={20} />
-              ) : (
-                <IconButton
-                  size="small"
-                  onClick={handleClear}
-                  aria-label="Clear search"
-                >
-                  <ClearIcon />
-                </IconButton>
-              )}
+              <IconButton
+                size="small"
+                onClick={handleClear}
+                aria-label="Clear search"
+              >
+                <ClearIcon />
+              </IconButton>
             </InputAdornment>
           ),
         },

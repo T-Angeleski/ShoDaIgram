@@ -19,7 +19,7 @@ export const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Bitter", "Inter", "Roboto", serif',
     h1: {
       fontSize: "2rem",
       fontWeight: 700,

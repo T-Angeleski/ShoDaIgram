@@ -7,13 +7,17 @@ import LoadingSpinner from "../components/common/loadingSpinner";
 import PageContainer from "../components/common/pageContainer";
 import Pagination from "../components/common/pagination";
 import GameGrid from "../components/game/gameGrid";
+import GameImageCarousel from "../components/search/gameImageCarousel";
 import SearchBar from "../components/search/searchBar";
 import {
+  CarouselSection,
   ExampleQueriesContainer,
   SearchContainer,
   SearchHeroSection,
 } from "../components/search/styled";
+import { useFeaturedGames } from "../hooks/queries/useFeaturedGames";
 import { useSearchGames } from "../hooks/queries/useSearchGames";
+import { useDebounce } from "../hooks/utils/useDebounce";
 
 const EXAMPLE_QUERIES = [
   "open world RPG",
@@ -24,18 +28,22 @@ const EXAMPLE_QUERIES = [
 ];
 
 const SearchPage = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [inputValue, setInputValue] = useState("");
   const [page, setPage] = useState(0);
   const [animatedIndex, setAnimatedIndex] = useState(0);
   const [hasUserTyped, setHasUserTyped] = useState(false);
 
+  const debouncedSearchQuery = useDebounce(inputValue, 300);
+
   const { data, isLoading, error, refetch } = useSearchGames({
-    query: searchQuery,
+    query: debouncedSearchQuery,
     page,
     size: 20,
   });
 
-  const showResults = searchQuery.length >= 3;
+  const { data: featuredGames } = useFeaturedGames();
+
+  const showResults = debouncedSearchQuery.length >= 3;
   const hasResults = data && data.games.length > 0;
 
   useEffect(() => {
@@ -52,14 +60,14 @@ const SearchPage = () => {
     ? "Search for games..."
     : `Try: ${EXAMPLE_QUERIES[animatedIndex]}`;
 
-  const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
+  const handleInputChange = useCallback((query: string) => {
+    setInputValue(query);
     setPage(0);
   }, []);
 
   const handleExampleClick = (example: string) => {
     setHasUserTyped(true);
-    setSearchQuery(example);
+    setInputValue(example);
     setPage(0);
   };
 
@@ -79,7 +87,8 @@ const SearchPage = () => {
 
         <SearchContainer>
           <SearchBar
-            onSearch={handleSearch}
+            value={inputValue}
+            onChange={handleInputChange}
             onUserType={() => setHasUserTyped(true)}
             autoFocus
             placeholder={currentPlaceholder}
@@ -106,6 +115,27 @@ const SearchPage = () => {
         )}
       </SearchHeroSection>
 
+      {!showResults && featuredGames && featuredGames.games.length > 0 && (
+        <CarouselSection>
+          <Typography
+            variant="h6"
+            color="text.secondary"
+            textAlign="center"
+            sx={{ mb: 4 }}
+          >
+            Discover Popular Games
+          </Typography>
+          <GameImageCarousel
+            games={featuredGames.games.slice(0, 15)}
+            direction="left-to-right"
+          />
+          <GameImageCarousel
+            games={featuredGames.games.slice(15, 30)}
+            direction="right-to-left"
+          />
+        </CarouselSection>
+      )}
+
       {showResults && (
         <>
           {isLoading && <LoadingSpinner message="Searching..." />}
@@ -114,10 +144,10 @@ const SearchPage = () => {
 
           {!isLoading && !error && !hasResults && (
             <EmptyState
-              message={`No games found for "${searchQuery}"`}
+              message={`No games found for "${debouncedSearchQuery}"`}
               actionLabel="Clear Search"
               onAction={() => {
-                setSearchQuery("");
+                setInputValue("");
                 setHasUserTyped(false);
               }}
             />
@@ -131,7 +161,7 @@ const SearchPage = () => {
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Found {data.totalResults.toLocaleString()} games matching "
-                  {searchQuery}"
+                  {debouncedSearchQuery}"
                 </Typography>
               </Box>
 
