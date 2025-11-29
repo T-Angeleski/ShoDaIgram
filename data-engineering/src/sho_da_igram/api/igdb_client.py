@@ -111,6 +111,14 @@ class IGDBClient:
             total_rating,
             total_rating_count,
             url,
+            cover.image_id,
+            cover.url,
+            cover.width,
+            cover.height,
+            screenshots.image_id,
+            screenshots.url,
+            artworks.image_id,
+            artworks.url,
             genres.name,
             genres.slug,
             platforms.name,
@@ -142,7 +150,7 @@ class IGDBClient:
             release_dates.region,
             release_dates.platform.name;
         where rating >= {min_rating} & rating_count >= 10;
-        sort rating desc;
+        sort total_rating_count desc;
         limit {request_limit};
         offset {offset};
         """
@@ -171,6 +179,10 @@ class IGDBClient:
             total_rating,
             total_rating_count,
             url,
+            cover.image_id,
+            cover.url,
+            screenshots.image_id,
+            screenshots.url,
             genres.name,
             genres.slug,
             platforms.name,
@@ -214,14 +226,15 @@ class IGDBClient:
         escaped_term = search_term.replace('"', '\\"')
 
         query = f"""
-        search "{escaped_term}";
-        fields
+        search "{escaped_term}";        fields
             name,
             slug,
             summary,
             first_release_date,
             rating,
             rating_count,
+            cover.image_id,
+            cover.url,
             genres.name,
             platforms.name;
         limit {limit};

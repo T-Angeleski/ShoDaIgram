@@ -242,6 +242,14 @@ class IGDBDataHandler:
         if not game or not game.get("id"):
             raise ValueError("Invalid game data: missing required fields")
 
+        cover_url = None
+        cover = game.get("cover")
+        if cover and cover.get("image_id"):
+            image_id = cover.get("image_id")
+            cover_url = (
+                f"https://images.igdb.com/igdb/image/upload/t_cover_big/{image_id}.jpg"
+            )
+
         # Extract basic fields
         processed: Dict[str, Any] = {
             "igdb_id": game.get("id"),
@@ -250,6 +258,7 @@ class IGDBDataHandler:
             "summary": game.get("summary"),
             "storyline": game.get("storyline"),
             "url": game.get("url"),
+            "cover_url": cover_url,
             "first_release_date": cls.format_release_date(
                 game.get("first_release_date")
             ),

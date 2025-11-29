@@ -29,36 +29,12 @@ const HomePage = () => {
   return (
     <PageContainer>
       <HeroSection>
-        <HeroTitle>ShoDaIgram</HeroTitle>
+        <HeroTitle>Sho Da Igram?</HeroTitle>
         <HeroSubtitle>Discover your next favorite game</HeroSubtitle>
         {data && <HeroStats>{statsText}</HeroStats>}
       </HeroSection>
 
       <CTAGrid>
-        <CTACard onClick={() => navigate("/games")}>
-          <CardContent sx={{ p: 5, textAlign: "center" }}>
-            <ExploreIcon sx={{ fontSize: 64, color: "#667eea", mb: 2 }} />
-            <CTATitle>Browse Games</CTATitle>
-            <CTADescription>
-              Explore our collection and filter by tags to find games that match
-              your preferences
-            </CTADescription>
-            <Button
-              variant="contained"
-              size="large"
-              sx={{
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                "&:hover": {
-                  background:
-                    "linear-gradient(135deg, #5568d3 0%, #6a3f8c 100%)",
-                },
-              }}
-            >
-              Start Browsing
-            </Button>
-          </CardContent>
-        </CTACard>
-
         <CTACard onClick={() => navigate("/search")}>
           <CardContent sx={{ p: 5, textAlign: "center" }}>
             <SearchIcon sx={{ fontSize: 64, color: "#764ba2", mb: 2 }} />
@@ -79,6 +55,30 @@ const HomePage = () => {
               }}
             >
               Start Searching
+            </Button>
+          </CardContent>
+        </CTACard>
+
+        <CTACard onClick={() => navigate("/games")}>
+          <CardContent sx={{ p: 5, textAlign: "center" }}>
+            <ExploreIcon sx={{ fontSize: 64, color: "#667eea", mb: 2 }} />
+            <CTATitle>Browse Games</CTATitle>
+            <CTADescription>
+              Explore our collection and filter by tags to find games that match
+              your preferences
+            </CTADescription>
+            <Button
+              variant="contained"
+              size="large"
+              sx={{
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                "&:hover": {
+                  background:
+                    "linear-gradient(135deg, #5568d3 0%, #6a3f8c 100%)",
+                },
+              }}
+            >
+              Start Browsing
             </Button>
           </CardContent>
         </CTACard>

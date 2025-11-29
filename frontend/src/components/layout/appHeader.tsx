@@ -33,6 +33,17 @@ const AppHeader = () => {
             </Button>
             <Button
               color="inherit"
+              onClick={() => navigate("/search")}
+              sx={{
+                borderBottom:
+                  location.pathname === "/search" ? "2px solid white" : "none",
+                borderRadius: 0,
+              }}
+            >
+              Search
+            </Button>
+            <Button
+              color="inherit"
               onClick={() => navigate("/games")}
               sx={{
                 borderBottom: location.pathname.startsWith("/games")
@@ -42,17 +53,6 @@ const AppHeader = () => {
               }}
             >
               Browse
-            </Button>
-            <Button
-              color="inherit"
-              onClick={() => navigate("/search")}
-              sx={{
-                borderBottom:
-                  location.pathname === "/search" ? "2px solid white" : "none",
-                borderRadius: 0,
-              }}
-            >
-              Search
             </Button>
           </NavLinks>
         </HeaderContent>

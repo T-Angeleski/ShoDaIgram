@@ -7,7 +7,7 @@ import java.math.BigDecimal
  */
 object SimilarityConstants {
     // Similarity thresholds and limits
-    const val MIN_SIMILARITY_THRESHOLD = 0.1
+    const val MIN_SIMILARITY_THRESHOLD = 0.25
     const val TOP_N_SIMILAR_GAMES = 20
     const val BATCH_SIZE = 100
     const val LOG_INTERVAL = 500
@@ -21,6 +21,9 @@ object SimilarityConstants {
 
     // Database similarity score precision
     const val SIMILARITY_SCORE_SCALE = 4
+
+    // Power factor to adjust similarity scores
+    const val SIMILARITY_POWER_FACTOR = 1.5
 
     /**
      * Explainability weights for MatchReason contributions.
